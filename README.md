@@ -1,8 +1,8 @@
-# Atodosol Solar
+# Atodosol Instalaciones Fotovoltaicas
 
 Integración local de Home Assistant para inversores Deye y equipos compatibles con los perfiles de Solarman. Basada en [davidrapan/ha-solarman](https://github.com/davidrapan/ha-solarman), versión v25.08.16, con licencia MIT y atribución conservada.
 
-## Qué añade Atodosol
+## Funciones
 
 - **Buscar en mi red**: detecta la red de Home Assistant y busca inversores Deye por Modbus TCP. Muestra el número de serie y la IP para elegir el equipo.
 - **Introducir IP manualmente**: alternativa disponible desde el inicio y cuando la búsqueda no encuentra dispositivos.
@@ -13,9 +13,15 @@ Integración local de Home Assistant para inversores Deye y equipos compatibles 
 
 ## Instalación con HACS
 
+[![Añadir a Home Assistant](docs/assets/add-to-home-assistant.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Atodosol&repository=ha-solarman-atodosol&category=integration)
+
+Pulsa **Añadir a Home Assistant** para abrir el repositorio en tu HACS. Necesitas tener HACS instalado. Descarga la integración y reinicia Home Assistant; después, [abre su configuración](https://my.home-assistant.io/redirect/config_flow_start/?domain=atodosol_solarman).
+
+También puedes seguir estos pasos manualmente:
+
 1. En HACS, abre **Repositorios personalizados** y añade `https://github.com/Atodosol/ha-solarman-atodosol` como **Integración**.
-2. Descarga **Atodosol Solar** y reinicia Home Assistant.
-3. Ve a **Ajustes → Dispositivos y servicios → Añadir integración → Atodosol Solar**.
+2. Descarga **Atodosol Instalaciones Fotovoltaicas** y reinicia Home Assistant.
+3. Ve a **Ajustes → Dispositivos y servicios → Añadir integración → Atodosol Instalaciones Fotovoltaicas**.
 4. Elige **Buscar en mi red** o **Introducir IP manualmente**.
 
 También puedes extraer el contenido de `atodosol_solarman.zip` en `/config/custom_components/atodosol_solarman/` y reiniciar.
@@ -24,7 +30,7 @@ El dominio de esta integración es `atodosol_solarman`, distinto de `solarman`. 
 
 ## Deye DYDA WiBLE
 
-El firmware y la configuración del dongle deben ofrecer **Modbus TCP**. En el equipo probado se utiliza DYDA WiBLE 1.7.1 con Link2 activado en ese modo. Esta integración no actualiza el firmware ni activa Link2.
+El dongle debe tener **Modbus TCP habilitado**. Esta integración no actualiza el firmware ni activa Link2.
 
 | Ajuste | Valor habitual |
 |---|---|
@@ -64,6 +70,6 @@ Las pruebas usan Home Assistant 2026.9.2 y Python 3.14. Los tests de transporte 
 
 ## Origen y licencia
 
-Copyright © 2024 David Rapan y colaboradores. Modificaciones Atodosol Solar © 2026. Se conserva la [licencia MIT](LICENSE), los perfiles y el [README de origen](docs/UPSTREAM_README.md). Atodosol Solar es una distribución independiente; no es software oficial de Deye ni de Home Assistant.
+Copyright © 2024 David Rapan y colaboradores. Modificaciones Atodosol Instalaciones Fotovoltaicas © 2026. Se conserva la [licencia MIT](LICENSE), los perfiles y el [README de origen](docs/UPSTREAM_README.md). Atodosol Instalaciones Fotovoltaicas es una distribución independiente; no es software oficial de Deye ni de Home Assistant.
 
 Los componentes incluidos conservan sus licencias: [pysolarman (MIT)](custom_components/atodosol_solarman/pysolarman/license) y [umodbus (MPL 2.0)](custom_components/atodosol_solarman/pysolarman/umodbus/license). Estos avisos también se incluyen en la descarga para HACS.

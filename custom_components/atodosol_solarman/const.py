@@ -53,7 +53,7 @@ REGISTERS_MAX_SIZE = "registers_max_size"
 DIGITS = "digits"
 
 DEFAULT_ = {
-    "name": "Atodosol Solar",
+    "name": "Atodosol Instalaciones Fotovoltaicas",
     CONF_HOST: "",
     CONF_PORT: 502,
     CONF_TRANSPORT: "modbus_tcp",

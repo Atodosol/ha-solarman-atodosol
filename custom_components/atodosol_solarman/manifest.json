@@ -1,6 +1,6 @@
 {
   "domain": "atodosol_solarman",
-  "name": "Atodosol Solar",
+  "name": "Atodosol Instalaciones Fotovoltaicas",
   "codeowners": [
     "@atodosol-maintainer"
   ],
@@ -28,5 +28,5 @@
     "aiofiles",
     "pyyaml"
   ],
-  "version": "1.0.0"
+  "version": "1.0.1"
 }

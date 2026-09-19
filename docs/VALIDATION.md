@@ -1,4 +1,4 @@
-# Validación de Atodosol Solar 1.0.0
+# Validación de Atodosol Instalaciones Fotovoltaicas 1.0.0
 
 Base: davidrapan/ha-solarman v25.08.16 (`e8db5da48a348794be86c5d9780a2468272b71cb`).
 
