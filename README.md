@@ -65,3 +65,5 @@ Las pruebas usan Home Assistant 2026.9.2 y Python 3.14. Los tests de transporte 
 ## Origen y licencia
 
 Copyright © 2024 David Rapan y colaboradores. Modificaciones Atodosol Solar © 2026. Se conserva la [licencia MIT](LICENSE), los perfiles y el [README de origen](docs/UPSTREAM_README.md). Atodosol Solar es una distribución independiente; no es software oficial de Deye ni de Home Assistant.
+
+Los componentes incluidos conservan sus licencias: [pysolarman (MIT)](custom_components/atodosol_solarman/pysolarman/license) y [umodbus (MPL 2.0)](custom_components/atodosol_solarman/pysolarman/umodbus/license). Estos avisos también se incluyen en la descarga para HACS.

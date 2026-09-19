@@ -16,12 +16,14 @@ def build():
     with ZipFile(output, 'w', ZIP_DEFLATED) as archive:
         for path in sorted(COMPONENT.rglob('*')):
             relative = path.relative_to(COMPONENT)
-            if path.is_file() and path.suffix in {'.py', '.json', '.yaml', '.svg', '.png'} and not any(p.startswith('.') or p in ('__pycache__', 'custom') for p in relative.parts):
+            runtime_file = path.suffix in {'.py', '.json', '.yaml', '.svg', '.png'}
+            license_file = path.name.lower() in {'license', 'license.txt'}
+            if path.is_file() and (runtime_file or license_file) and not any(p.startswith('.') or p in ('__pycache__', 'custom') for p in relative.parts):
                 archive.write(path, str(relative))
         archive.write(ROOT / 'LICENSE', 'LICENSE')
     with ZipFile(output) as archive:
         assert archive.testzip() is None
-        assert {'manifest.json','config_flow.py','lan.py','modbus_tcp.py','translations/es.json','LICENSE'} <= set(archive.namelist())
+        assert {'manifest.json','config_flow.py','lan.py','modbus_tcp.py','translations/es.json','LICENSE','pysolarman/license','pysolarman/umodbus/license'} <= set(archive.namelist())
     print(output)
     return output
 
