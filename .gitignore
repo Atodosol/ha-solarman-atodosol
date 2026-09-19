@@ -4,4 +4,10 @@ __pycache__/
 *$py.class
 
 # HACS
-custom_components/solarman/inverter_definitions/custom/
+custom_components/atodosol_solarman/inverter_definitions/custom/
+
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/

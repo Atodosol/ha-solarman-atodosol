@@ -1,0 +1,178 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Este inversor ya está configurado",
+      "already_configured_device": "Este inversor ya está configurado",
+      "already_in_progress": "Ya se está configurando este inversor"
+    },
+    "error": {
+      "cannot_connect": "No se pudo leer el inversor. Comprueba la IP, el puerto y la conexión.",
+      "invalid_host": "Introduce un nombre de equipo o una IP válida.",
+      "timeout_connect": "El equipo no ha respondido a tiempo.",
+      "unknown": "Se produjo un error inesperado.",
+      "invalid_network": "Usa una red IPv4 privada de hasta /22, por ejemplo 192.168.1.0/24.",
+      "invalid_response": "El equipo no ha respondido correctamente al perfil. Comprueba el protocolo, el puerto y la dirección Modbus."
+    },
+    "step": {
+      "manual": {
+        "title": "Configurar inversor",
+        "data": {
+          "host": "Nombre del equipo o dirección IP",
+          "port": "Puerto",
+          "transport": "Protocolo",
+          "lookup_file": "Perfil",
+          "name": "Nombre del dispositivo",
+          "model": "Modelo exacto (opcional)"
+        },
+        "data_description": {
+          "host": "Dirección del dongle accesible desde Home Assistant.",
+          "port": "502 para Modbus TCP (DYDA); 8899 para Solarman V5.",
+          "transport": "En DYDA con Modbus TCP activado, selecciona Modbus TCP.",
+          "lookup_file": "Auto detecta los inversores Deye compatibles. Para otros equipos, elige su perfil.",
+          "name": "Nombre que identificarás en Home Assistant.",
+          "model": "Referencia completa de la etiqueta, por ejemplo SUN-…. Si se deja vacío, se muestra la identificación que entrega el inversor."
+        },
+        "sections": {
+          "additional_options": {
+            "name": "Opciones adicionales",
+            "data": {
+              "mod": "Variante del perfil",
+              "mppt": "Número de MPPT",
+              "phase": "Número de fases",
+              "pack": "Número de baterías",
+              "battery_nominal_voltage": "Tensión nominal de batería",
+              "battery_life_cycle_rating": "Vida útil de batería en ciclos",
+              "mb_slave_id": "Dirección Modbus (normalmente 1)"
+            }
+          }
+        }
+      },
+      "user": {
+        "title": "Atodosol Solar",
+        "description": "Elige cómo conectar tu inversor.",
+        "menu_options": {
+          "automatic": "Buscar en mi red",
+          "manual": "Introducir IP manualmente"
+        }
+      },
+      "automatic": {
+        "title": "Buscar tu inversor",
+        "description": "Redes detectadas: {networks}. Confirma o modifica la red IPv4 privada. En redes grandes se propone un tramo /24; puedes buscar en otro tramo de hasta /22. La búsqueda se realiza desde Home Assistant, solo lee la identificación y tarda hasta 45 segundos.",
+        "data": {
+          "network": "Red local (CIDR)"
+        }
+      },
+      "choose": {
+        "title": "Inversores encontrados",
+        "description": "Selecciona tu inversor por número de serie e IP. La identificación confirma un inversor compatible con Deye, no un modelo concreto de dongle.",
+        "data": {
+          "device": "Inversor"
+        }
+      },
+      "not_found": {
+        "title": "No se han encontrado inversores compatibles",
+        "description": "Comprueba que el dongle y Home Assistant estén en una red accesible, que Modbus TCP esté activado en el puerto 502 y que la dirección Modbus sea 1. Si utilizas Docker o hay otro router, prueba otra red o introduce la IP manualmente.",
+        "menu_options": {
+          "automatic": "Volver a buscar",
+          "manual": "Introducir IP manualmente"
+        }
+      },
+      "scan_failed": {
+        "title": "No se pudo completar la búsqueda",
+        "description": "Comprueba la conexión de red o introduce la IP manualmente.",
+        "menu_options": {
+          "automatic": "Reintentar búsqueda",
+          "manual": "Introducir IP manualmente"
+        }
+      }
+    },
+    "progress": {
+      "scan": "Buscando inversores compatibles en la red local…"
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "No se pudo leer el inversor. Comprueba la IP, el puerto y la conexión.",
+      "invalid_host": "Introduce un nombre de equipo o una IP válida.",
+      "timeout_connect": "El equipo no ha respondido a tiempo.",
+      "unknown": "Se produjo un error inesperado.",
+      "invalid_network": "Usa una red IPv4 privada de hasta /22, por ejemplo 192.168.1.0/24.",
+      "invalid_response": "El equipo no ha respondido correctamente al perfil. Comprueba el protocolo, el puerto y la dirección Modbus.",
+      "wrong_device": "La dirección corresponde a otro inversor. Añádelo como un dispositivo nuevo."
+    },
+    "step": {
+      "init": {
+        "title": "Configurar inversor",
+        "data": {
+          "host": "Nombre del equipo o dirección IP",
+          "port": "Puerto",
+          "transport": "Protocolo",
+          "lookup_file": "Perfil",
+          "model": "Modelo exacto (opcional)"
+        },
+        "data_description": {
+          "host": "Dirección del dongle accesible desde Home Assistant.",
+          "port": "502 para Modbus TCP (DYDA); 8899 para Solarman V5.",
+          "transport": "En DYDA con Modbus TCP activado, selecciona Modbus TCP.",
+          "lookup_file": "Auto detecta los inversores Deye compatibles. Para otros equipos, elige su perfil.",
+          "model": "Referencia completa de la etiqueta, por ejemplo SUN-…. Si se deja vacío, se muestra la identificación que entrega el inversor."
+        },
+        "sections": {
+          "additional_options": {
+            "name": "Opciones adicionales",
+            "data": {
+              "mod": "Variante del perfil",
+              "mppt": "Número de MPPT",
+              "phase": "Número de fases",
+              "pack": "Número de baterías",
+              "battery_nominal_voltage": "Tensión nominal de batería",
+              "battery_life_cycle_rating": "Vida útil de batería en ciclos",
+              "mb_slave_id": "Dirección Modbus (normalmente 1)"
+            }
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "transport": {
+      "options": {
+        "tcp": "Solarman V5 (TCP)",
+        "udp": "UDP",
+        "modbus_rtu": "Modbus RTU",
+        "modbus_tcp": "Modbus TCP"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "today_battery_charge": {
+        "name": "Today's Battery Charge"
+      },
+      "today_battery_discharge": {
+        "name": "Today's Battery Discharge"
+      },
+      "today_battery_life_cycles": {
+        "name": "Today's Battery Life Cycles"
+      },
+      "today_energy_export": {
+        "name": "Today's Energy Export"
+      },
+      "today_energy_import": {
+        "name": "Today's Energy Import"
+      },
+      "today_generation": {
+        "name": "Today's Generation"
+      },
+      "today_load_consumption": {
+        "name": "Today's Load Consumption"
+      },
+      "today_losses": {
+        "name": "Today's Losses"
+      },
+      "today_production": {
+        "name": "Today's Production"
+      }
+    }
+  }
+}

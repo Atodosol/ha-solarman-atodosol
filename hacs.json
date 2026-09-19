@@ -1,7 +1,7 @@
 {
-    "name": "Solarman",
-    "zip_release": true,
-    "filename": "solarman.zip",
-    "homeassistant": "2025.2.0",
-    "persistent_directory": "inverter_definitions/custom"
+  "name": "Atodosol Solar",
+  "zip_release": true,
+  "filename": "atodosol_solarman.zip",
+  "homeassistant": "2025.2.0",
+  "persistent_directory": "inverter_definitions/custom"
 }

@@ -10,7 +10,7 @@ read_holding_registers:
       selector:
         device:
           filter:
-            - integration: solarman
+            - integration: atodosol_solarman
     address:
       name: Address
       description: Modbus register address
@@ -44,7 +44,7 @@ read_input_registers:
       selector:
         device:
           filter:
-            - integration: solarman
+            - integration: atodosol_solarman
     address:
       name: Address
       description: Modbus register address
@@ -78,7 +78,7 @@ write_single_register:
       selector:
         device:
           filter:
-            - integration: solarman
+            - integration: atodosol_solarman
     address:
       name: Address
       description: Modbus register address
@@ -112,7 +112,7 @@ write_multiple_registers:
       selector:
         device:
           filter:
-            - integration: solarman
+            - integration: atodosol_solarman
     address:
       name: Address
       description: Modbus register address
@@ -149,7 +149,7 @@ write_holding_register:
       selector:
         device:
           filter:
-            - integration: solarman
+            - integration: atodosol_solarman
     register:
       name: Address
       description: Modbus register address
@@ -183,7 +183,7 @@ write_multiple_holding_registers:
       selector:
         device:
           filter:
-            - integration: solarman
+            - integration: atodosol_solarman
     register:
       name: Address
       description: Modbus register address

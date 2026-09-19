@@ -89,7 +89,9 @@ def get_current_file_name(value):
     return result[-1] if len(result := value.rsplit('.', 1)) > 0 else ""
 
 async def async_listdir(path, prefix = ""):
-    return sorted([prefix + f for f in await async_execute(lambda: os.listdir(path)) if os.path.isfile(path + f)]) if os.path.exists(path) else []
+    def list_files():
+        return sorted(prefix + f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))) if os.path.isdir(path) else []
+    return await async_execute(list_files)
 
 def to_dict(*keys: list):
     return {k: k for k in keys}
@@ -366,3 +368,38 @@ def div_mod(dividend, divisor):
 
 def concat_hex(value):
     return int(f"0x{value[0]:02}{value[1]:02}", 16)
+
+
+def describe_inverter(device_info, data, exact_model=""):
+    """Use observed identity; profile families are not commercial model numbers."""
+    def state(name):
+        value = data.get(name)
+        return value[0] if isinstance(value, (tuple, list)) and value else value
+
+    serial = state('device_serial_number_sensor')
+    if serial:
+        device_info['serial_number'] = str(serial)
+        device_info['identifiers'] = {i for i in device_info['identifiers'] if i[1] != '0'} | {(DOMAIN, str(serial))}
+    model = exact_model.strip() or state('device_model_sensor') or state('device_model_number_sensor')
+    if model:
+        device_info['model'] = str(model)
+        device_info['model_id'] = str(model)
+    elif '*' in device_info.get('model', ''):
+        # Registers describe the hardware, but do not supply a SUN-... SKU.
+        kind = state('device_sensor') or 'Inverter'
+        parts = [str(kind)]
+        power = state('device_rated_power_sensor')
+        mppts = state('device_mppts_sensor')
+        if isinstance(power, (int, float)) and power > 0:
+            parts.append(f'{power / 1000:g} kW')
+        if isinstance(mppts, (int, float)) and mppts > 0:
+            parts.append(f'{mppts:g} MPPT')
+        family = device_info.get('model', '')
+        if family.startswith('SG0*') and isinstance(power, (int, float)) and power > 0:
+            device_info['model'] = family.replace('SG0*', f'SG{power / 1000:g}', 1)
+        else:
+            device_info['model'] = ' · '.join(parts)
+    firmware = state('device_control_board_firmware_version_sensor')
+    if firmware:
+        device_info['sw_version'] = str(firmware)
+    return device_info

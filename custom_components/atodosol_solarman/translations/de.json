@@ -9,23 +9,27 @@
       "cannot_connect": "Verbindung fehlgeschlagen",
       "invalid_host": "Ungültiger Hostname oder ungültige IP-Adresse",
       "timeout_connect": "Zeitüberschreitung beim Verbindungsaufbau",
-      "unknown": "Unerwarteter Fehler"
+      "unknown": "Unerwarteter Fehler",
+      "invalid_network": "Use a private IPv4 range of /22 or smaller, such as 192.168.1.0/24.",
+      "invalid_response": "The device did not return a valid response for this profile. Check protocol, port and Slave ID."
     },
     "step": {
-      "user": {
+      "manual": {
         "title": "Konfiguration der Verbindung zum Wechselrichter",
         "data": {
           "name": "Gerätename",
           "host": "Host (IP-Adresse oder Hostname)",
           "port": "Port (normalerweise 8899)",
           "transport": "Transportprotokoll",
-          "lookup_file": "Profil"
+          "lookup_file": "Profil",
+          "model": "Exact model (optional)"
         },
         "data_description": {
           "name": "Prefix für alle Parameterwerte (nach Belieben zu ändern)",
           "host": "Der Hostname oder die IP-Adresse des Geräts, mit dem eine Verbindung hergestellt werden soll",
-          "port": "Der Port (8899) des Geräts, mit dem eine Verbindung hergestellt werden soll",
-          "lookup_file": "YAML-Datei mit der Parameter-Definition"
+          "port": "502 for Modbus TCP (DYDA); 8899 for Solarman V5.",
+          "lookup_file": "Auto detects supported Deye inverters. Other devices require their matching profile.",
+          "model": "Full model from the label, such as SUN-…. If empty, the identification reported by the inverter is shown."
         },
         "sections": {
           "additional_options": {
@@ -41,7 +45,48 @@
             }
           }
         }
+      },
+      "user": {
+        "title": "Atodosol Solar",
+        "description": "Choose how to connect your inverter.",
+        "menu_options": {
+          "automatic": "Find on my network",
+          "manual": "Enter IP manually"
+        }
+      },
+      "automatic": {
+        "title": "Find your inverter",
+        "description": "Detected networks: {networks}. Confirm or edit the private IPv4 range. Large networks use a suggested /24 range; you can scan another range up to /22. The search runs from Home Assistant, reads identification only and takes up to 45 seconds.",
+        "data": {
+          "network": "Local network (CIDR)"
+        }
+      },
+      "choose": {
+        "title": "Inverters found",
+        "description": "Select your inverter by serial number and IP address. Identification confirms a Deye-compatible inverter, not a particular dongle model.",
+        "data": {
+          "device": "Inverter"
+        }
+      },
+      "not_found": {
+        "title": "No compatible inverter found",
+        "description": "Check that the dongle and Home Assistant share a reachable LAN, Modbus TCP is enabled on port 502, and Slave ID is 1. Networks behind a router or Docker may require another range or a manual IP.",
+        "menu_options": {
+          "automatic": "Search again",
+          "manual": "Enter IP manually"
+        }
+      },
+      "scan_failed": {
+        "title": "Search could not complete",
+        "description": "Check the network connection or enter the IP manually.",
+        "menu_options": {
+          "automatic": "Retry search",
+          "manual": "Enter IP manually"
+        }
       }
+    },
+    "progress": {
+      "scan": "Searching the local network for compatible inverters…"
     }
   },
   "options": {
@@ -49,7 +94,9 @@
       "cannot_connect": "Verbindung fehlgeschlagen",
       "invalid_host": "Ungültiger Hostname oder ungültige IP-Adresse",
       "timeout_connect": "Zeitüberschreitung beim Verbindungsaufbau",
-      "unknown": "Unerwarteter Fehler"
+      "unknown": "Unerwarteter Fehler",
+      "invalid_response": "The device did not return a valid response for this profile. Check protocol, port and Slave ID.",
+      "wrong_device": "This address belongs to a different inverter. Add it as a new device."
     },
     "step": {
       "init": {
@@ -58,12 +105,14 @@
           "host": "Host (IP-Adresse oder Hostname)",
           "port": "Port (normalerweise 8899)",
           "transport": "Transportprotokoll",
-          "lookup_file": "Profil"
+          "lookup_file": "Profil",
+          "model": "Exact model (optional)"
         },
         "data_description": {
           "host": "Der Hostname oder die IP-Adresse des Geräts, mit dem eine Verbindung hergestellt werden soll",
-          "port": "Der Port (8899) des Geräts, mit dem eine Verbindung hergestellt werden soll",
-          "lookup_file": "YAML-Datei mit der Parameter-Definition"
+          "port": "502 for Modbus TCP (DYDA); 8899 for Solarman V5.",
+          "lookup_file": "Auto detects supported Deye inverters. Other devices require their matching profile.",
+          "model": "Full model from the label, such as SUN-…. If empty, the identification reported by the inverter is shown."
         },
         "sections": {
           "additional_options": {
@@ -85,11 +134,11 @@
   "selector": {
     "transport": {
       "options": {
-        "tcp": "TCP",
+        "tcp": "Solarman V5 (TCP)",
         "udp": "UDP",
         "modbus_rtu": "Modbus RTU",
         "modbus_tcp": "Modbus TCP"
-      } 
+      }
     }
   },
   "entity": {

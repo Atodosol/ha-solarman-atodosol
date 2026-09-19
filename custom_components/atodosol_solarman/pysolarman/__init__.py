@@ -76,6 +76,7 @@ class Solarman:
         self._data_queue = asyncio.Queue(maxsize = 1)
         self._data_event = Event()
         self._last_frame: bytes | None = None
+        self._tcp_client = None
 
     @staticmethod
     def _get_response_code(code: int) -> int:
@@ -312,6 +313,11 @@ class Solarman:
 
     @log_return("DATA")
     async def execute(self, code: int, address: int, **kwargs) -> list[int]:
+        if self.transport == "modbus_tcp":
+            from ..modbus_tcp import ModbusTCPClient
+            if self._tcp_client is None:
+                self._tcp_client = ModbusTCPClient(self.host, int(self.port), self.slave, self.timeout)
+            return await self._tcp_client.execute(code, address, **kwargs)
         if code not in FUNCTION_CODES:
             raise Exception(f"Invalid modbus function code {code:02}")
 
@@ -321,6 +327,8 @@ class Solarman:
 
     @log_call("Closing connection")
     async def close(self) -> None:
+        if self._tcp_client is not None:
+            await self._tcp_client.close()
         async with self._semaphore:
             if self.connected:
                 self._keeper.cancel()

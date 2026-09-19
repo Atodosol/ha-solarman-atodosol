@@ -2,7 +2,7 @@ from re import compile
 from datetime import timedelta
 from aiohttp import BasicAuth, FormData
 
-DOMAIN = "solarman"
+DOMAIN = "atodosol_solarman"
 
 IP_BROADCAST = "<broadcast>"
 IP_ANY = "0.0.0.0"
@@ -53,10 +53,10 @@ REGISTERS_MAX_SIZE = "registers_max_size"
 DIGITS = "digits"
 
 DEFAULT_ = {
-    "name": "Inverter",
+    "name": "Atodosol Solar",
     CONF_HOST: "",
-    CONF_PORT: 8899,
-    CONF_TRANSPORT: "tcp",
+    CONF_PORT: 502,
+    CONF_TRANSPORT: "modbus_tcp",
     CONF_MB_SLAVE_ID: 1,
     CONF_LOOKUP_FILE: "Auto",
     CONF_MOD: 0,

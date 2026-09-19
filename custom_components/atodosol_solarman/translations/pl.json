@@ -1,0 +1,202 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Urządzenie jest już skonfigurowane",
+      "already_configured_device": "Urządzenie jest już skonfigurowane",
+      "already_in_progress": "Przepływ konfiguracji jest już w toku"
+    },
+    "error": {
+      "cannot_connect": "Nie udało się połączyć",
+      "invalid_host": "Nieprawidłowa nazwa hosta lub adres IP",
+      "timeout_connect": "Przekroczono limit czasu nawiązywania połączenia",
+      "unknown": "Nieznany błąd",
+      "invalid_network": "Use a private IPv4 range of /22 or smaller, such as 192.168.1.0/24.",
+      "invalid_response": "The device did not return a valid response for this profile. Check protocol, port and Slave ID."
+    },
+    "step": {
+      "manual": {
+        "title": "Konfiguracja połączenia falownika",
+        "data": {
+          "name": "Nazwa urządzenia",
+          "host": "Host (adres IP lub nazwa hosta)",
+          "port": "Port (zwykle 8899)",
+          "transport": "Protokół transportowy",
+          "lookup_file": "Profil",
+          "model": "Exact model (optional)"
+        },
+        "data_description": {
+          "name": "Ta nazwa będzie poprzedzać wszystkie wartości parametrów (zmień wedle uznania)",
+          "host": "Nazwa hosta lub adres IP urządzenia, z którym chcesz się połączyć",
+          "port": "502 for Modbus TCP (DYDA); 8899 for Solarman V5.",
+          "lookup_file": "Auto detects supported Deye inverters. Other devices require their matching profile.",
+          "model": "Full model from the label, such as SUN-…. If empty, the identification reported by the inverter is shown."
+        },
+        "sections": {
+          "additional_options": {
+            "name": "Opcje dodatkowe",
+            "data": {
+              "mod": "Modyfikator",
+              "mppt": "Liczba MPPT",
+              "phase": "Liczba faz",
+              "pack": "Liczba pakietów baterii",
+              "battery_nominal_voltage": "Napięcie znamionowe akumulatora litowo-jonowego",
+              "battery_life_cycle_rating": "Oczekiwany wskaźnik cyklu życia akumulatora litowo-jonowego",
+              "mb_slave_id": "Modbus Slave ID (zwykle 1)"
+            }
+          }
+        }
+      },
+      "user": {
+        "title": "Atodosol Solar",
+        "description": "Choose how to connect your inverter.",
+        "menu_options": {
+          "automatic": "Find on my network",
+          "manual": "Enter IP manually"
+        }
+      },
+      "automatic": {
+        "title": "Find your inverter",
+        "description": "Detected networks: {networks}. Confirm or edit the private IPv4 range. Large networks use a suggested /24 range; you can scan another range up to /22. The search runs from Home Assistant, reads identification only and takes up to 45 seconds.",
+        "data": {
+          "network": "Local network (CIDR)"
+        }
+      },
+      "choose": {
+        "title": "Inverters found",
+        "description": "Select your inverter by serial number and IP address. Identification confirms a Deye-compatible inverter, not a particular dongle model.",
+        "data": {
+          "device": "Inverter"
+        }
+      },
+      "not_found": {
+        "title": "No compatible inverter found",
+        "description": "Check that the dongle and Home Assistant share a reachable LAN, Modbus TCP is enabled on port 502, and Slave ID is 1. Networks behind a router or Docker may require another range or a manual IP.",
+        "menu_options": {
+          "automatic": "Search again",
+          "manual": "Enter IP manually"
+        }
+      },
+      "scan_failed": {
+        "title": "Search could not complete",
+        "description": "Check the network connection or enter the IP manually.",
+        "menu_options": {
+          "automatic": "Retry search",
+          "manual": "Enter IP manually"
+        }
+      }
+    },
+    "progress": {
+      "scan": "Searching the local network for compatible inverters…"
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Nie udało się połączyć",
+      "invalid_host": "Nieprawidłowa nazwa hosta lub adres IP",
+      "timeout_connect": "Przekroczono limit czasu nawiązywania połączenia",
+      "unknown": "Nieznany błąd",
+      "invalid_response": "The device did not return a valid response for this profile. Check protocol, port and Slave ID.",
+      "wrong_device": "This address belongs to a different inverter. Add it as a new device."
+    },
+    "step": {
+      "init": {
+        "title": "Konfiguracja połączenia falownika",
+        "data": {
+          "host": "Host (adres IP lub nazwa hosta)",
+          "port": "Port (zwykle 8899)",
+          "transport": "Protokół transportowy",
+          "lookup_file": "Profil",
+          "model": "Exact model (optional)"
+        },
+        "data_description": {
+          "host": "Nazwa hosta lub adres IP urządzenia, z którym chcesz się połączyć",
+          "port": "502 for Modbus TCP (DYDA); 8899 for Solarman V5.",
+          "lookup_file": "Auto detects supported Deye inverters. Other devices require their matching profile.",
+          "model": "Full model from the label, such as SUN-…. If empty, the identification reported by the inverter is shown."
+        },
+        "sections": {
+          "additional_options": {
+            "name": "Opcje dodatkowe",
+            "data": {
+              "mod": "Modyfikator",
+              "mppt": "Liczba MPPT",
+              "phase": "Liczba faz",
+              "pack": "Liczba pakietów baterii",
+              "battery_nominal_voltage": "Napięcie znamionowe akumulatora litowo-jonowego",
+              "battery_life_cycle_rating": "Oczekiwany wskaźnik cyklu życia akumulatora litowo-jonowego",
+              "mb_slave_id": "Modbus Slave ID (zwykle 1)"
+            }
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "transport": {
+      "options": {
+        "tcp": "Solarman V5 (TCP)",
+        "udp": "UDP",
+        "modbus_rtu": "Modbus RTU",
+        "modbus_tcp": "Modbus TCP"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "today_battery_charge": {
+        "name": "Dzisiejsze ładowanie baterii"
+      },
+      "today_battery_discharge": {
+        "name": "Dzisiejsze rozładowanie baterii"
+      },
+      "today_battery_life_cycles": {
+        "name": "Dzisiejsze cykle baterii"
+      },
+      "today_energy_export": {
+        "name": "Dzisiejszy eksport energii"
+      },
+      "today_energy_import": {
+        "name": "Dzisiejszy import energii"
+      },
+      "today_generation": {
+        "name": "Dzisiejsza generacja"
+      },
+      "today_load_consumption": {
+        "name": "Dzisiejsze zużycie prądu"
+      },
+      "today_losses": {
+        "name": "Dzisiejsze straty"
+      },
+      "today_production": {
+        "name": "Dzisiejsza produkcja"
+      },
+      "total_battery_charge": {
+        "name": "Całkowite ładowanie baterii"
+      },
+      "total_battery_discharge": {
+        "name": "Całkowite rozładowanie baterii"
+      },
+      "total_battery_life_cycles": {
+        "name": "Całkowita liczba cykli baterii"
+      },
+      "total_energy_export": {
+        "name": "Całkowity eksport energii"
+      },
+      "total_energy_import": {
+        "name": "Całkowity import energii"
+      },
+      "total_generation": {
+        "name": "Całkowita generacja"
+      },
+      "total_load_consumption": {
+        "name": "Całkowite zużycie prądu"
+      },
+      "total_losses": {
+        "name": "Całkowite straty"
+      },
+      "total_production": {
+        "name": "Całkowita produkcja"
+      }
+    }
+  }
+}
