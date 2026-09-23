@@ -82,6 +82,22 @@ async def test_empty_scan_keeps_manual_alternative(hass):
         result=await hass.config_entries.flow.async_configure(result['flow_id'])
     assert result['step_id']=='not_found'
     assert 'manual' in result['menu_options']
+    assert result['description_placeholders']=={'details':'-'}
+
+async def test_not_found_lists_unidentified_modbus_hosts(hass):
+    result=await hass.config_entries.flow.async_init(DOMAIN,context={'source':'user'})
+    result=await hass.config_entries.flow.async_configure(result['flow_id'],{'next_step_id':'automatic'})
+    scan=ScanResult(unidentified=[('192.168.0.57','timeout')])
+    with patch('custom_components.atodosol_solarman.config_flow.scan_lan',return_value=scan):
+        result=await hass.config_entries.flow.async_configure(result['flow_id'],{'network':'192.168.0.0/24'})
+        await hass.async_block_till_done()
+    result=await hass.config_entries.flow.async_configure(result['flow_id'])
+    if result.get('type')==FlowResultType.SHOW_PROGRESS_DONE:
+        result=await hass.config_entries.flow.async_configure(result['flow_id'])
+    assert result['step_id']=='not_found'
+    assert result['description_placeholders']['details']=='- 192.168.0.57: no Modbus answer in time'
+    result=await hass.config_entries.flow.async_configure(result['flow_id'],{'next_step_id':'manual'})
+    assert any((getattr(k,'description',None) or {}).get('suggested_value')=='192.168.0.57' for k in result['data_schema'].schema)
 
 async def test_cancel_scan_cancels_worker(hass):
     started=asyncio.Event();cancelled=asyncio.Event()

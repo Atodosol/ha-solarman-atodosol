@@ -71,7 +71,7 @@
       },
       "not_found": {
         "title": "No compatible inverter found",
-        "description": "Check that the dongle and Home Assistant share a reachable LAN, Modbus TCP is enabled on port 502, and Slave ID is 1. Networks behind a router or Docker may require another range or a manual IP.",
+        "description": "Check that the dongle and Home Assistant share a reachable LAN, Modbus TCP is enabled on port 502, and Slave ID is 1. Networks behind a router or Docker may require another range or a manual IP. Hosts with port 502 open that did not identify as an inverter:\n{details}",
         "menu_options": {
           "automatic": "Search again",
           "manual": "Enter IP manually"

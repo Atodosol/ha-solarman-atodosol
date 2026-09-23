@@ -71,7 +71,7 @@
       },
       "not_found": {
         "title": "No se han encontrado inversores compatibles",
-        "description": "Comprueba que el dongle y Home Assistant estén en una red accesible, que Modbus TCP esté activado en el puerto 502 y que la dirección Modbus sea 1. Si utilizas Docker o hay otro router, prueba otra red o introduce la IP manualmente.",
+        "description": "Comprueba que el dongle y Home Assistant estén en una red accesible, que Modbus TCP esté activado en el puerto 502 y que la dirección Modbus sea 1. Si utilizas Docker o hay otro router, prueba otra red o introduce la IP manualmente. Equipos con el puerto 502 abierto que no se identificaron como inversor:\n{details}",
         "menu_options": {
           "automatic": "Volver a buscar",
           "manual": "Introducir IP manualmente"

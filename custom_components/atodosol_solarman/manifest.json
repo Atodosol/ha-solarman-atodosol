@@ -14,6 +14,9 @@
       "macaddress": "E8FDF8*"
     },
     {
+      "macaddress": "88A68D*"
+    },
+    {
       "registered_devices": true
     }
   ],
@@ -28,5 +31,5 @@
     "aiofiles",
     "pyyaml"
   ],
-  "version": "1.0.1"
+  "version": "1.0.2"
 }

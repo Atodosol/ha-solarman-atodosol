@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import voluptuous as vol
 from homeassistant.components import network
-from .lan import adapter_networks, scan_lan, scan_network
+from .lan import adapter_networks, reason_text, scan_lan, scan_network
 
 from typing import Any
 from logging import getLogger
@@ -170,7 +170,13 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_not_found(self, user_input=None):
-        return self.async_show_menu(step_id="not_found", menu_options=["automatic", "manual"])
+        # Say which hosts answered on 502 and why they were not identified.
+        found = self._scan_result.unidentified if self._scan_result else []
+        details = "\n".join(f"- {host}: {reason_text(reason, self.hass.config.language)}" for host, reason in found[:8]) or "-"
+        if found:
+            self._suggested = {CONF_NAME: DEFAULT_[CONF_NAME], CONF_HOST: found[0][0]}
+        return self.async_show_menu(step_id="not_found", menu_options=["automatic", "manual"],
+                                    description_placeholders={"details": details})
 
     async def async_step_scan_failed(self, user_input=None):
         return self.async_show_menu(step_id="scan_failed", menu_options=["automatic", "manual"])
