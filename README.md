@@ -47,6 +47,10 @@ Para otros puertos, direcciones Modbus o protocolos, utiliza la entrada manual. 
 
 Se muestra el número de serie real del inversor y su firmware. Cuando los registros no proporcionan el modelo comercial completo, se muestran los datos disponibles. En los perfiles de familia `SG0*`, el asterisco se sustituye por la potencia detectada en kW: por ejemplo, `SG10LP1` para 10 kW. Esta es una etiqueta derivada del perfil, no una referencia comercial SUN confirmada. El campo opcional **Modelo exacto** permite conservar íntegra la referencia de la etiqueta (SUN-…). No se ocultan caracteres ni se inventa una referencia a partir de la potencia.
 
+### Sustitución del inversor
+
+Si se cambia el inversor y se mantienen el dongle y su dirección, no hace falta borrar la integración. Cuando el inversor informa de un número de serie distinto (al arrancar o en la lectura de identificación, cada hora en los perfiles Deye), la entrada se recarga, vuelve a detectar el perfil Auto y pasa el dispositivo al número de serie nuevo. Se conservan el dispositivo, las entidades y su historial. En **Opciones**, la misma dirección con otro número de serie pide confirmar la sustitución; una dirección distinta con otro inversor se sigue tratando como un equipo diferente. El modelo exacto, un perfil manual y las opciones adicionales se mantienen: revísalos si describían el inversor anterior.
+
 ## Alcance de la búsqueda
 
 Se ejecuta desde Home Assistant, bajo demanda. Solo acepta redes IPv4 privadas, con un máximo de 1024 direcciones, 24 consultas simultáneas y 45 segundos por búsqueda. En redes grandes propone el tramo /24 de la interfaz; puedes indicar otro tramo de hasta /22. No busca por Internet ni usa credenciales del dongle.

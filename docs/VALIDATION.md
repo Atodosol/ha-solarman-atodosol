@@ -15,6 +15,7 @@ Suite con Python 3.14 y Home Assistant 2026.9.2:
 - Rechazo de equipos que solo tienen abierto Modbus pero no identifican un inversor Deye.
 - Flujos reales de configuración de Home Assistant: manual, automático, errores, ausencia de resultados y duplicados.
 - Cambio de IP en opciones: se comprueba que sigue siendo el mismo inversor.
+- Sustitución del inversor tras el mismo dongle: número de serie nuevo detectado en funcionamiento, al arrancar y desde opciones con confirmación; se conservan la entrada, el dispositivo y las entidades, sin identificadores duplicados ni conflicto con otra entrada.
 
 ## Prueba física y de interfaz
 
