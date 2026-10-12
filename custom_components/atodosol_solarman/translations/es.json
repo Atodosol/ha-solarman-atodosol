@@ -91,6 +91,9 @@
     }
   },
   "options": {
+    "abort": {
+      "already_configured": "Este inversor ya está configurado en otra entrada."
+    },
     "error": {
       "cannot_connect": "No se pudo leer el inversor. Comprueba la IP, el puerto y la conexión.",
       "invalid_host": "Introduce un nombre de equipo o una IP válida.",
@@ -98,7 +101,8 @@
       "unknown": "Se produjo un error inesperado.",
       "invalid_network": "Usa una red IPv4 privada de hasta /22, por ejemplo 192.168.1.0/24.",
       "invalid_response": "El equipo no ha respondido correctamente al perfil. Comprueba el protocolo, el puerto y la dirección Modbus.",
-      "wrong_device": "La dirección corresponde a otro inversor. Añádelo como un dispositivo nuevo."
+      "wrong_device": "La dirección corresponde a otro inversor. Añádelo como un dispositivo nuevo.",
+      "already_configured": "Este inversor ya está configurado en otra entrada."
     },
     "step": {
       "init": {
@@ -131,6 +135,10 @@
             }
           }
         }
+      },
+      "inverter_replaced": {
+        "title": "¿Se ha sustituido el inversor?",
+        "description": "El inversor de esta dirección indica ahora el número de serie {new_serial} en lugar de {old_serial}. Confirma solo si se ha sustituido el inversor: se conservan este dispositivo y sus entidades, que pasan al nuevo número de serie, y el perfil Auto se vuelve a detectar. Si indicaste un modelo exacto, un perfil manual u opciones adicionales para el inversor anterior, revísalos."
       }
     }
   },

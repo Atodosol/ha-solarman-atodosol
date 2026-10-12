@@ -95,6 +95,12 @@ async def validate_connection(hass, user_input):
         if client is not None:
             await client.close()
 
+def same_endpoint(options: dict[str, Any], user_input: dict[str, Any]):
+    """Same dongle address, port and Modbus slave."""
+    return (options.get(CONF_HOST, "").strip() == user_input.get(CONF_HOST, "").strip()
+        and options.get(CONF_PORT, DEFAULT_[CONF_PORT]) == user_input.get(CONF_PORT, DEFAULT_[CONF_PORT])
+        and options.get(CONF_ADDITIONAL_OPTIONS, {}).get(CONF_MB_SLAVE_ID, 1) == user_input.get(CONF_ADDITIONAL_OPTIONS, {}).get(CONF_MB_SLAVE_ID, 1))
+
 def remove_defaults(user_input: dict[str, Any]):
     for k in list(user_input.keys()):
         if k == CONF_ADDITIONAL_OPTIONS:
@@ -192,9 +198,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                     await self.async_set_unique_id(f"deye_{identity.serial}")
                     self._abort_if_unique_id_configured()
                 for entry in self._async_current_entries():
-                    if (entry.options.get(CONF_HOST) == user_input[CONF_HOST]
-                        and entry.options.get(CONF_PORT, DEFAULT_[CONF_PORT]) == user_input.get(CONF_PORT, DEFAULT_[CONF_PORT])
-                        and entry.options.get(CONF_ADDITIONAL_OPTIONS, {}).get(CONF_MB_SLAVE_ID, 1) == user_input.get(CONF_ADDITIONAL_OPTIONS, {}).get(CONF_MB_SLAVE_ID, 1)):
+                    if same_endpoint(entry.options, user_input):
                         return self.async_abort(reason="already_configured")
                 options = remove_defaults(filter_by_keys(user_input, CONFIGURATION_SCHEMA))
                 if identity is not None:
@@ -224,13 +228,21 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
 class OptionsFlowHandler(OptionsFlow):
     def __init__(self, entry):
         self.entry = entry
+        self._replacement = None
 
     async def async_step_init(self, user_input=None):
         errors = {}
         if user_input is not None:
             errors, identity = await validate_connection(self.hass, user_input)
             expected = self.entry.options.get("inverter_serial")
-            if not errors and expected and (identity is None or identity.serial != expected):
+            if not errors and expected and identity is not None and identity.serial != expected and same_endpoint(self.entry.options, user_input):
+                # Same dongle and address, another valid inverter: offer to keep this entry for the replacement.
+                if self.hass.config_entries.async_entry_for_domain_unique_id(DOMAIN, f"deye_{identity.serial}"):
+                    errors = {"base": "already_configured"}
+                else:
+                    self._replacement = (remove_defaults(dict(user_input)), identity.serial)
+                    return await self.async_step_inverter_replaced()
+            elif not errors and expected and (identity is None or identity.serial != expected):
                 errors = {"base": "wrong_device"}
             if not errors:
                 options = remove_defaults(dict(user_input))
@@ -241,4 +253,17 @@ class OptionsFlowHandler(OptionsFlow):
             step_id="init",
             data_schema=self.add_suggested_values_to_schema(await data_schema(self.hass, CONFIGURATION_SCHEMA), user_input or self.entry.options),
             errors=errors or {},
+        )
+
+    async def async_step_inverter_replaced(self, user_input=None):
+        options, serial = self._replacement
+        expected = self.entry.options.get("inverter_serial")
+        if user_input is not None:
+            if (options := replace_inverter(self.hass, self.entry, expected, serial, options)) is None:
+                return self.async_abort(reason="already_configured")
+            return self.async_create_entry(data=options)
+        return self.async_show_form(
+            step_id="inverter_replaced",
+            data_schema=vol.Schema({}),
+            description_placeholders={"old_serial": expected, "new_serial": serial},
         )

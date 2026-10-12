@@ -14,6 +14,8 @@ from typing import Any, Iterable
 from aiohttp import ClientSession, ClientError, ContentTypeError
 
 from homeassistant.util import slugify as _slugify
+from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC, DeviceInfo, format_mac
 
 from .const import *
@@ -403,3 +405,64 @@ def describe_inverter(device_info, data, exact_model=""):
     if firmware:
         device_info['sw_version'] = str(firmware)
     return device_info
+
+
+def observed_inverter_serial(data):
+    """Serial reported by the inverter itself; a garbled read is not a replacement."""
+    value = data.get('device_serial_number_sensor') if data else None
+    value = value[0] if isinstance(value, (tuple, list)) and value else value
+    serial = str(value).strip() if value is not None else ''
+    return serial if len(serial) >= 6 and serial.isalnum() and set(serial) != {'0'} else None
+
+
+def entry_device(registry, entry):
+    return next((d for d in dr.async_entries_for_config_entry(registry, entry.entry_id) if (DOMAIN, entry.entry_id) in d.identifiers), None)
+
+
+def stored_inverter_serial(hass, entry, logger_serial=None):
+    """Serial the entry belongs to: the verified one, or the one on its device."""
+    if serial := entry.options.get('inverter_serial'):
+        return serial
+    device = entry_device(dr.async_get(hass), entry)
+    if device and (serial := device.serial_number) and (DOMAIN, serial) in device.identifiers and serial != logger_serial:
+        return serial
+    return None
+
+
+def replace_inverter(hass, entry, old, new, options=None):
+    """Move the entry and its device to a replacement inverter on the same connection.
+
+    Entities are keyed by entry_id and stay untouched. The device keeps its id; the
+    old serial identifier is substituted, not accumulated. Returns the saved options,
+    or None when the new inverter already belongs to another entry.
+    """
+    options = dict(entry.options if options is None else options)
+    unique_id = entry.unique_id
+    if entry.options.get('inverter_serial') or unique_id == f'deye_{old}':
+        unique_id = f'deye_{new}'
+        if (other := hass.config_entries.async_entry_for_domain_unique_id(DOMAIN, unique_id)) and other.entry_id != entry.entry_id:
+            _LOGGER.warning('%s: inverter %s is already configured in %s; keeping %s', entry.title, new, other.title, old)
+            return None
+        options['inverter_serial'] = new
+
+    registry = dr.async_get(hass)
+    if device := entry_device(registry, entry):
+        identifiers = {i for i in device.identifiers if i != (DOMAIN, old)} | {(DOMAIN, new)}
+        try:
+            registry.async_update_device(device.id, new_identifiers=identifiers, serial_number=new)
+        except HomeAssistantError as e:
+            _LOGGER.warning('%s: device identifiers not updated: %s', entry.title, strepr(e))
+            registry.async_update_device(device.id, serial_number=new)
+
+    hass.config_entries.async_update_entry(entry, unique_id=unique_id, options=options)
+    _LOGGER.info('%s: inverter replaced, serial number %s -> %s', entry.title, old, new)
+
+    # Auto profiles are detected again on reload; user choices are kept, but may
+    # describe the previous inverter.
+    review = ['model'] if options.get('model') else []
+    if options.get(CONF_LOOKUP_FILE, DEFAULT_[CONF_LOOKUP_FILE]) not in AUTODETECTION_REDIRECT:
+        review.append(CONF_LOOKUP_FILE)
+    review += [k for k in options.get(CONF_ADDITIONAL_OPTIONS, {}) if k != CONF_MB_SLAVE_ID]
+    if review:
+        _LOGGER.warning('%s: options kept from the previous inverter, review them: %s', entry.title, ', '.join(review))
+    return options

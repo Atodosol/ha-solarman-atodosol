@@ -2,6 +2,7 @@ import asyncio
 from unittest.mock import AsyncMock, patch
 import pytest
 from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.helpers import device_registry as dr
 from pytest_homeassistant_custom_component.common import MockConfigEntry, MockModule, mock_integration
 from custom_components.atodosol_solarman.const import DOMAIN
 from custom_components.atodosol_solarman.lan import Inverter, ScanResult
@@ -118,6 +119,54 @@ async def test_options_reject_different_inverter(hass):
     entry=MockConfigEntry(domain=DOMAIN,unique_id='deye_'+DEVICE.serial,options=MANUAL | {'inverter_serial':DEVICE.serial},version=2)
     entry.add_to_hass(hass)
     result=await hass.config_entries.options.async_init(entry.entry_id)
-    with patch('custom_components.atodosol_solarman.config_flow.validate_connection',return_value=(None,Inverter(DEVICE.host,'9999999999',3))):
-        result=await hass.config_entries.options.async_configure(result['flow_id'],{k:v for k,v in MANUAL.items() if k!='name'})
+    # Another address answering with another serial is another inverter, not a replacement.
+    with patch('custom_components.atodosol_solarman.config_flow.validate_connection',return_value=(None,Inverter('192.168.50.20','9999999999',3))):
+        result=await hass.config_entries.options.async_configure(result['flow_id'],{k:v for k,v in MANUAL.items() if k!='name'} | {'host':'192.168.50.20'})
     assert result['errors']=={'base':'wrong_device'}
+    assert entry.unique_id=='deye_'+DEVICE.serial
+
+
+def replaced_entry(hass):
+    entry=MockConfigEntry(domain=DOMAIN,title='Test solar',unique_id='deye_'+DEVICE.serial,options={k:v for k,v in MANUAL.items() if k!='name'} | {'inverter_serial':DEVICE.serial,'model':'SUN-OLD'},version=2)
+    entry.add_to_hass(hass)
+    device=dr.async_get(hass).async_get_or_create(config_entry_id=entry.entry_id,identifiers={(DOMAIN,entry.entry_id),(DOMAIN,DEVICE.serial)},serial_number=DEVICE.serial,name='Test solar')
+    return entry,device
+
+
+async def test_options_replaced_inverter_keeps_entry_and_device(hass):
+    entry,device=replaced_entry(hass)
+    result=await hass.config_entries.options.async_init(entry.entry_id)
+    with patch('custom_components.atodosol_solarman.config_flow.validate_connection',return_value=(None,Inverter(DEVICE.host,'2401010001',3))):
+        result=await hass.config_entries.options.async_configure(result['flow_id'],{k:v for k,v in MANUAL.items() if k!='name'} | {'model':'SUN-OLD'})
+    assert result['type']==FlowResultType.FORM and result['step_id']=='inverter_replaced'
+    assert result['description_placeholders']=={'old_serial':DEVICE.serial,'new_serial':'2401010001'}
+    assert entry.unique_id=='deye_'+DEVICE.serial
+    result=await hass.config_entries.options.async_configure(result['flow_id'],{})
+    assert result['type']==FlowResultType.CREATE_ENTRY
+    assert entry.unique_id=='deye_2401010001'
+    assert entry.options['inverter_serial']=='2401010001'
+    assert entry.options['host']==DEVICE.host and entry.options['model']=='SUN-OLD'
+    devices=dr.async_entries_for_config_entry(dr.async_get(hass),entry.entry_id)
+    assert [d.id for d in devices]==[device.id]
+    assert devices[0].identifiers=={(DOMAIN,entry.entry_id),(DOMAIN,'2401010001')}
+    assert devices[0].serial_number=='2401010001'
+
+
+async def test_options_replaced_inverter_already_configured_elsewhere(hass):
+    entry,_=replaced_entry(hass)
+    MockConfigEntry(domain=DOMAIN,unique_id='deye_2401010001',options={'host':'192.168.50.30','inverter_serial':'2401010001'},version=2).add_to_hass(hass)
+    result=await hass.config_entries.options.async_init(entry.entry_id)
+    with patch('custom_components.atodosol_solarman.config_flow.validate_connection',return_value=(None,Inverter(DEVICE.host,'2401010001',3))):
+        result=await hass.config_entries.options.async_configure(result['flow_id'],{k:v for k,v in MANUAL.items() if k!='name'})
+    assert result['errors']=={'base':'already_configured'}
+    assert entry.unique_id=='deye_'+DEVICE.serial and entry.options['inverter_serial']==DEVICE.serial
+
+
+async def test_options_same_inverter_unchanged(hass):
+    entry,device=replaced_entry(hass)
+    result=await hass.config_entries.options.async_init(entry.entry_id)
+    with patch('custom_components.atodosol_solarman.config_flow.validate_connection',return_value=(None,DEVICE)):
+        result=await hass.config_entries.options.async_configure(result['flow_id'],{k:v for k,v in MANUAL.items() if k!='name'} | {'port':503})
+    assert result['type']==FlowResultType.CREATE_ENTRY
+    assert entry.unique_id=='deye_'+DEVICE.serial and entry.options['inverter_serial']==DEVICE.serial and entry.options['port']==503
+    assert dr.async_get(hass).async_get(device.id).identifiers=={(DOMAIN,entry.entry_id),(DOMAIN,DEVICE.serial)}

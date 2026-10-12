@@ -1,4 +1,5 @@
-from custom_components.atodosol_solarman.common import describe_inverter
+import pytest
+from custom_components.atodosol_solarman.common import describe_inverter, observed_inverter_serial
 from custom_components.atodosol_solarman.const import DOMAIN
 
 
@@ -33,3 +34,14 @@ def test_detected_power_is_used_in_sg_display():
     result=describe_inverter(device(),readings() | {'device_rated_power_sensor':(5500,None)})
     assert result['model']=='SG5.5LP1'
     assert 'model_id' not in result
+
+
+def test_observed_serial_from_readings():
+    assert observed_inverter_serial(readings())=='1234567890'
+    assert observed_inverter_serial({})is None
+    assert observed_inverter_serial(None)is None
+
+
+@pytest.mark.parametrize('value',['0000000000','','12 45','\x00\x00\x00','12345'])
+def test_garbled_serial_is_not_a_replacement(value):
+    assert observed_inverter_serial({'device_serial_number_sensor':(value,None)})is None

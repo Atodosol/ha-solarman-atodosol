@@ -90,13 +90,17 @@
     }
   },
   "options": {
+    "abort": {
+      "already_configured": "This inverter is already configured in another entry."
+    },
     "error": {
       "cannot_connect": "Nepodařilo se připojit",
       "invalid_host": "Neplatný název hostitele nebo IP adresa",
       "timeout_connect": "Vypršel časový limit navazování spojení",
       "unknown": "Neočekávaná chyba",
       "invalid_response": "The device did not return a valid response for this profile. Check protocol, port and Slave ID.",
-      "wrong_device": "This address belongs to a different inverter. Add it as a new device."
+      "wrong_device": "This address belongs to a different inverter. Add it as a new device.",
+      "already_configured": "This inverter is already configured in another entry."
     },
     "step": {
       "init": {
@@ -128,6 +132,10 @@
             }
           }
         }
+      },
+      "inverter_replaced": {
+        "title": "Inverter replaced?",
+        "description": "The inverter at this address now reports serial number {new_serial} instead of {old_serial}. Confirm only if the inverter was replaced: this device and its entities are kept and move to the new serial number, and the Auto profile is detected again. If you set an exact model, a manual profile or additional options for the previous inverter, review them."
       }
     }
   },
