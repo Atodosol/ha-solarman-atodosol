@@ -20,7 +20,8 @@ class SocProtect(BoardControl, SwitchEntity):
     """«Detener la carga por SOC mínimo» of «Carga máxima».
 
     In «Solo solar» the board keeps the battery at 95 % by itself and the page
-    hides this setting, so it is not available then.
+    hides this setting, so it is available only in «Carga máxima» (not in a
+    mode this version does not know either).
     """
 
     _attr_icon = "mdi:battery-lock"
@@ -29,7 +30,7 @@ class SocProtect(BoardControl, SwitchEntity):
         super().__init__(coordinator, "soc_protect")
 
     def control_available(self, state: BoardState) -> bool:
-        return not state.solar_mode
+        return state.max_mode
 
     @property
     def is_on(self) -> bool:

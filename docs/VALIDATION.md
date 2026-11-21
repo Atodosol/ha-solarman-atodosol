@@ -6,7 +6,7 @@ Contrato: API local del firmware (`local_web.h` y `local_portal.h`): `GET /api/s
 
 ### Pruebas automatizadas
 
-Suite completa con Python 3.14 y Home Assistant 2026.9.2: 105 pruebas, todas correctas (55 anteriores y 50 de la placa). Las de la placa usan una placa simulada en localhost que aplica las reglas del firmware: cabecera Host, rechazo de Origin ajeno, formulario obligatorio, PIN con intentos y bloqueo, validación de campos, 409 sin regulación configurada, respuesta 202 pendiente y `Connection: close`. Su estado de partida es la respuesta real de la placa de laboratorio, anonimizada (`tests/fixtures/board_state_lab.json`).
+Suite completa con Python 3.14 y Home Assistant 2026.9.2: 107 pruebas, todas correctas (55 anteriores y 52 de la placa). Las de la placa usan una placa simulada en localhost que aplica las reglas del firmware: cabecera Host, rechazo de Origin ajeno, formulario obligatorio, PIN con intentos y bloqueo, validación de campos, 409 sin regulación configurada, respuesta 202 pendiente y `Connection: close`. Su estado de partida es la respuesta real de la placa de laboratorio, anonimizada (`tests/fixtures/board_state_lab.json`).
 
 - Lectura del estado real sin configurar, valores nulos, tipos incorrectos, instalación aislada y respuestas de otros equipos.
 - Cuerpos exactos de cada cambio: modo, protección por SOC, mínimo, potencia contratada (texto que acepta el firmware) y PIN solo si la placa lo tiene.
@@ -16,7 +16,7 @@ Suite completa con Python 3.14 y Home Assistant 2026.9.2: 105 pruebas, todas cor
 - Opciones: misma dirección sin petición, PIN no válido, otra placa en la nueva dirección rechazada e intervalo de lectura aplicado.
 - Entidades de una placa configurada, de la placa sin configurar (controles no disponibles con el motivo), instalación aislada, «Solo solar» con y sin potencia de batería, alarma de cargador, placa equivocada en la dirección guardada y placa que no responde.
 - Cambios: modo con lectura cada 5 s mientras está pendiente, protección desactivada y activada de nuevo con su mínimo, mínimo y potencia contratada.
-- Modo de carga: se lee del campo `mode` cuando la placa lo envía y, si no, de `solar`. Un modo desconocido se muestra como desconocido, nunca como «Carga máxima», y ningún otro cambio envía `mode`, así que la placa lo conserva. El firmware 0.5.193 de la placa de laboratorio no envía `mode`: ese caso solo se ha probado con la placa simulada.
+- Modo de carga: se lee del campo `mode` cuando la placa lo envía y, si no, de `solar`. Un modo desconocido se muestra como desconocido, nunca como «Carga máxima»; en él, el interruptor y el SOC mínimo no están disponibles y «Solo solar» se ofrece según `solar_ok`. Ningún otro cambio envía `mode`, así que la placa lo conserva. El firmware 0.5.193 de la placa de laboratorio no envía `mode`: ese caso solo se ha probado con la placa simulada.
 - PIN: sin PIN guardado no se envía nada; PIN correcto; PIN incorrecto enviado una sola vez; bloqueo (423 y `locked_s`); PIN puesto en la placa después de la última lectura.
 - Rechazos de la placa (409) con su texto, placa que no responde a un cambio y diagnóstico sin PIN, direcciones, MAC, red Wi-Fi ni números de serie. El PIN tampoco aparece en el registro, ni en modo depuración.
 - Textos en español e inglés para todos los errores, estados y avisos.

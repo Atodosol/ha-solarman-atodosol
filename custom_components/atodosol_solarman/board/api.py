@@ -247,9 +247,13 @@ class BoardState:
 
     @property
     def solar_mode(self) -> bool:
-        """«Solo solar» is on (for an unknown mode, as the board's `solar` says)."""
-        mode = self.charge_mode
-        return mode == MODE_SOLAR if mode is not None else self.solar
+        """«Solo solar» is the effective mode."""
+        return self.charge_mode == MODE_SOLAR
+
+    @property
+    def max_mode(self) -> bool:
+        """«Carga máxima» is the effective mode (not in an unknown mode)."""
+        return self.charge_mode == MODE_MAX
 
     @property
     def solar_selectable(self) -> bool:

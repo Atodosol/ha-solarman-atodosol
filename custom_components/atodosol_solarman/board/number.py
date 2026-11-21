@@ -31,7 +31,7 @@ class SocMinimum(BoardControl, NumberEntity):
 
     def control_available(self, state: BoardState) -> bool:
         # As on the board page: only with the protection on and in «Carga máxima».
-        return state.soc_protect and not state.solar_mode
+        return state.soc_protect and state.max_mode
 
     @property
     def native_value(self) -> int | None:
