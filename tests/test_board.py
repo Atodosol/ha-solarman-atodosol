@@ -368,7 +368,8 @@ async def test_entities_of_a_writable_board(hass, board):
     assert state_of(hass, 'sensor', 'charger_limit').attributes['ceiling_a'] == 32
     age = er.async_get(hass).async_get(eid(hass, 'sensor', 'charger_data_age'))
     assert age.disabled_by is er.RegistryEntryDisabler.INTEGRATION
-    device = dr.async_get(hass).async_get_device_by_identifier((DOMAIN, BOARD_ID), entry.entry_id)
+    device, = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)
+    assert (DOMAIN, BOARD_ID) in device.identifiers
     assert (device.manufacturer, device.sw_version) == ('Atodosol', '0.5.193')
     assert (dr.CONNECTION_NETWORK_MAC, '0a:1b:2c:3d:4e:5f') in device.connections
     assert device.configuration_url == f'http://{board.host}/'
@@ -659,3 +660,17 @@ async def test_unknown_mode_is_unknown_and_never_overwritten(hass, board, solar_
     await hass.async_block_till_done()
     assert state_of(hass, 'select', 'charge_mode').state == 'max'
     assert state_of(hass, 'switch', 'soc_protect').state == 'on'
+
+
+async def test_firmware_update_without_the_recent_device_lookup(hass, board, monkeypatch):
+    """Home Assistant 2025.2 (hacs.json) has no DeviceRegistry.async_get_device_by_identifier."""
+    monkeypatch.delattr(dr.DeviceRegistry, 'async_get_device_by_identifier')
+    entry = await setup_board(hass, board)
+    assert entry.state is ConfigEntryState.LOADED
+    board.state['fw'] = '0.5.194'
+    await entry.runtime_data.async_refresh()
+    await hass.async_block_till_done()
+    assert entry.runtime_data.last_update_success
+    assert state_of(hass, 'sensor', 'battery').state == '64'
+    device, = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)
+    assert device.sw_version == '0.5.194'

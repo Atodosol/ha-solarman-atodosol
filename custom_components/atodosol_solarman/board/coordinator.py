@@ -90,7 +90,11 @@ class BoardCoordinator(DataUpdateCoordinator[BoardState]):
 
     def _update_firmware(self, state: BoardState) -> None:
         registry = dr.async_get(self.hass)
-        device = registry.async_get_device_by_identifier((DOMAIN, state.id), self.config_entry.entry_id)
+        # async_get_device_by_identifier is recent; hacs.json allows Home Assistant 2025.2.
+        if get_device := getattr(registry, "async_get_device_by_identifier", None):
+            device = get_device((DOMAIN, state.id), self.config_entry.entry_id)
+        else:
+            device = registry.async_get_device(identifiers={(DOMAIN, state.id)})
         if device and device.sw_version != state.fw:
             registry.async_update_device(device.id, sw_version=state.fw)
 
