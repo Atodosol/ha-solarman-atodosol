@@ -29,7 +29,7 @@ from custom_components.atodosol_solarman.diagnostics import async_get_config_ent
 
 from fake_board import BOARD_ID, LAB, FakeBoard, writable_state
 
-pytestmark = pytest.mark.enable_socket
+pytestmark = pytest.mark.usefixtures("socket_enabled")
 
 ROOT = Path(__file__).parents[1] / 'custom_components' / DOMAIN
 

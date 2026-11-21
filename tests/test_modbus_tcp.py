@@ -32,7 +32,7 @@ def response(req, values):
     return req[:2] + struct.pack('>HHB', 0, len(body)+1, req[6]) + body
 
 
-@pytest.mark.enable_socket
+@pytest.mark.usefixtures("socket_enabled")
 @pytest.mark.parametrize('split', [1, 5, 7, 9, 1000])
 async def test_fragmented_full_block_and_connection_reuse(split):
     async def handler(reader, writer):
@@ -50,7 +50,7 @@ async def test_fragmented_full_block_and_connection_reuse(split):
         finally: await client.close()
 
 
-@pytest.mark.enable_socket
+@pytest.mark.usefixtures("socket_enabled")
 async def test_reconnect_after_truncated_frame():
     calls=0
     async def handler(reader,writer):
@@ -65,7 +65,7 @@ async def test_reconnect_after_truncated_frame():
     assert calls==2
 
 
-@pytest.mark.enable_socket
+@pytest.mark.usefixtures("socket_enabled")
 async def test_write_is_not_repeated_after_lost_acknowledgement():
     calls=0
     async def handler(reader,writer):
@@ -80,7 +80,7 @@ async def test_write_is_not_repeated_after_lost_acknowledgement():
     assert calls==1
 
 
-@pytest.mark.enable_socket
+@pytest.mark.usefixtures("socket_enabled")
 @pytest.mark.parametrize('field,value', [('length',65535),('unit',2),('transaction',12345),('protocol',1)])
 async def test_rejects_invalid_headers(field,value):
     async def handler(reader,writer):
@@ -95,7 +95,7 @@ async def test_rejects_invalid_headers(field,value):
         finally: await client.close()
 
 
-@pytest.mark.enable_socket
+@pytest.mark.usefixtures("socket_enabled")
 async def test_cancellation_closes_socket_and_reconnects():
     ready=asyncio.Event();disconnected=asyncio.Event()
     async def handler(reader,writer):
