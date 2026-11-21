@@ -13,13 +13,18 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import *
 from .common import *
 from .services import *
+from .board import is_board
+from .board import switch as board_switch
 from .entity import SolarmanEntity, SolarmanWritableEntity, Coordinator
 
 _LOGGER = getLogger(__name__)
 
 _PLATFORM = get_current_file_name(__name__)
 
-async def async_setup_entry(_: HomeAssistant, config_entry: ConfigEntry[Coordinator], async_add_entities: AddEntitiesCallback) -> bool:
+async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry[Coordinator], async_add_entities: AddEntitiesCallback) -> bool:
+    if is_board(config_entry):
+        return await board_switch.async_setup_entry(hass, config_entry, async_add_entities)
+
     _LOGGER.debug(f"async_setup_entry: {config_entry.options}")
 
     async_add_entities([SolarmanAccessPoint(config_entry.runtime_data)] + [SolarmanSwitchEntity(config_entry.runtime_data, d).init() for d in postprocess_descriptions(config_entry.runtime_data, _PLATFORM)])
@@ -27,7 +32,8 @@ async def async_setup_entry(_: HomeAssistant, config_entry: ConfigEntry[Coordina
     return True
 
 async def async_unload_entry(_: HomeAssistant, config_entry: ConfigEntry[Coordinator]) -> bool:
-    _LOGGER.debug(f"async_unload_entry: {config_entry.options}")
+    if not is_board(config_entry):  # board options hold its PIN
+        _LOGGER.debug(f"async_unload_entry: {config_entry.options}")
 
     return True
 

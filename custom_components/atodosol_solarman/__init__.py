@@ -19,6 +19,8 @@ from .services import register
 from .discovery import discover
 from .coordinator import Coordinator
 from .config_flow import ConfigFlowHandler
+from .board import is_board
+from .board.setup import async_setup_board_entry, async_unload_board_entry, board_device_removable
 
 _LOGGER = getLogger(__name__)
 
@@ -47,6 +49,9 @@ async def async_setup(hass: HomeAssistant, _: ConfigType):
     return True
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry[Coordinator]):
+    if is_board(config_entry):  # before any log of the options: they hold the board PIN
+        return await async_setup_board_entry(hass, config_entry)
+
     _LOGGER.debug(f"async_setup_entry({config_entry.as_dict()})")
 
     # Initiaize coordinator and fetch initial data
@@ -90,6 +95,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry[Coord
     return True
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry[Coordinator]):
+    if is_board(config_entry):
+        return await async_unload_board_entry(hass, config_entry)
+
     _LOGGER.debug(f"async_unload_entry({config_entry.as_dict()})")
 
     # Forward unload
@@ -99,6 +107,11 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry[Coor
     return await hass.config_entries.async_unload_platforms(config_entry, _PLATFORMS)
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry[Coordinator]):
+    if is_board(config_entry):
+        # Nothing to migrate in a board entry; never touch its unique id (the board id).
+        hass.config_entries.async_update_entry(config_entry, minor_version = ConfigFlowHandler.MINOR_VERSION, version = ConfigFlowHandler.VERSION)
+        return True
+
     _LOGGER.debug(f"async_migrate_entry({config_entry.as_dict()})")
     _LOGGER.info("Migrating configuration version %s.%s to %s.%s", config_entry.version, config_entry.minor_version, ConfigFlowHandler.VERSION, ConfigFlowHandler.MINOR_VERSION)
 
@@ -120,6 +133,9 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry[Coo
     return True
 
 async def async_remove_config_entry_device(_: HomeAssistant, config_entry: ConfigEntry[Coordinator], device_entry: DeviceEntry):
+    if is_board(config_entry):
+        return board_device_removable(config_entry, device_entry)
+
     _LOGGER.debug(f"async_remove_config_entry_device({config_entry.as_dict()}, {device_entry})")
 
     return not (config_entry.entry_id == device_entry.primary_config_entry or any(identifier for identifier in device_entry.identifiers if identifier[0] == DOMAIN and (identifier[1] == config_entry.entry_id or identifier[1] == config_entry.runtime_data.device.modbus.serial)))

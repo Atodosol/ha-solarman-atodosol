@@ -1,9 +1,14 @@
 {
   "config": {
+    "flow_title": "{name}",
     "abort": {
       "already_configured": "Este inversor ya está configurado",
       "already_configured_device": "Este inversor ya está configurado",
-      "already_in_progress": "Ya se está configurando este inversor"
+      "already_in_progress": "Ya se está configurando este equipo",
+      "board_already_configured": "Esta placa ya está configurada.",
+      "board_cannot_connect": "No se pudo leer la placa encontrada.",
+      "not_a_board": "El equipo encontrado no es una placa domótica Atodosol.",
+      "invalid_host": "La dirección del equipo encontrado no es válida."
     },
     "error": {
       "cannot_connect": "No se pudo leer el inversor. Comprueba la IP, el puerto y la conexión.",
@@ -11,7 +16,10 @@
       "timeout_connect": "El equipo no ha respondido a tiempo.",
       "unknown": "Se produjo un error inesperado.",
       "invalid_network": "Usa una red IPv4 privada de hasta /22, por ejemplo 192.168.1.0/24.",
-      "invalid_response": "El equipo no ha respondido correctamente al perfil. Comprueba el protocolo, el puerto y la dirección Modbus."
+      "invalid_response": "El equipo no ha respondido correctamente al perfil. Comprueba el protocolo, el puerto y la dirección Modbus.",
+      "board_cannot_connect": "No se pudo leer la placa. Comprueba la dirección y que Home Assistant esté en la misma red que la placa.",
+      "board_host_rejected": "La placa solo responde a atodosol.local, atodosol-2.local o a su IP. Escribe una de esas direcciones.",
+      "not_a_board": "En esa dirección no responde una placa domótica Atodosol."
     },
     "step": {
       "manual": {
@@ -49,10 +57,11 @@
       },
       "user": {
         "title": "Atodosol Instalaciones Fotovoltaicas",
-        "description": "Elige cómo conectar tu inversor.",
+        "description": "Elige qué quieres añadir.",
         "menu_options": {
-          "automatic": "Buscar en mi red",
-          "manual": "Introducir IP manualmente"
+          "automatic": "Inversor: buscar en mi red",
+          "manual": "Inversor: introducir IP manualmente",
+          "board": "Placa domótica Atodosol"
         }
       },
       "automatic": {
@@ -84,6 +93,20 @@
           "automatic": "Reintentar búsqueda",
           "manual": "Introducir IP manualmente"
         }
+      },
+      "board": {
+        "title": "Placa domótica Atodosol",
+        "description": "Escribe la dirección de la placa: atodosol.local o su IP. Si en casa hay dos placas, la segunda se llama atodosol-2.local. Home Assistant tiene que estar en la misma red.",
+        "data": {
+          "host": "Dirección de la placa"
+        },
+        "data_description": {
+          "host": "atodosol.local, atodosol-2.local o la IP de la placa, por ejemplo 192.168.1.50."
+        }
+      },
+      "board_discovered": {
+        "title": "Placa domótica Atodosol encontrada",
+        "description": "Hay una placa domótica Atodosol en {host} ({name}). ¿Quieres añadirla?"
       }
     },
     "progress": {
@@ -102,7 +125,12 @@
       "invalid_network": "Usa una red IPv4 privada de hasta /22, por ejemplo 192.168.1.0/24.",
       "invalid_response": "El equipo no ha respondido correctamente al perfil. Comprueba el protocolo, el puerto y la dirección Modbus.",
       "wrong_device": "La dirección corresponde a otro inversor. Añádelo como un dispositivo nuevo.",
-      "already_configured": "Este inversor ya está configurado en otra entrada."
+      "already_configured": "Este inversor ya está configurado en otra entrada.",
+      "board_cannot_connect": "No se pudo leer la placa. Comprueba la dirección y que Home Assistant esté en la misma red que la placa.",
+      "board_host_rejected": "La placa solo responde a atodosol.local, atodosol-2.local o a su IP. Escribe una de esas direcciones.",
+      "not_a_board": "En esa dirección no responde una placa domótica Atodosol.",
+      "wrong_board": "En esa dirección responde otra placa. Añádela como un dispositivo nuevo.",
+      "invalid_pin": "El PIN tiene de 4 a 8 cifras."
     },
     "step": {
       "init": {
@@ -139,6 +167,20 @@
       "inverter_replaced": {
         "title": "¿Se ha sustituido el inversor?",
         "description": "El inversor de esta dirección indica ahora el número de serie {new_serial} en lugar de {old_serial}. Confirma solo si se ha sustituido el inversor: se conservan este dispositivo y sus entidades, que pasan al nuevo número de serie, y el perfil Auto se vuelve a detectar. Si indicaste un modelo exacto, un perfil manual u opciones adicionales para el inversor anterior, revísalos."
+      },
+      "board": {
+        "title": "Placa domótica Atodosol",
+        "description": "Si la placa tiene PIN, escríbelo aquí para poder cambiar sus ajustes desde Home Assistant. La placa no deja comprobar el PIN sin cambiar un ajuste: se comprobará la primera vez que cambies algo. Para poner, cambiar o quitar el PIN, usa la página de la placa.",
+        "data": {
+          "host": "Dirección de la placa",
+          "pin": "PIN de la placa",
+          "scan_interval": "Lectura cada (segundos)"
+        },
+        "data_description": {
+          "host": "Solo se acepta si en la nueva dirección responde esta misma placa.",
+          "pin": "Déjalo vacío si la placa no tiene PIN. Tiene de 4 a 8 cifras.",
+          "scan_interval": "Entre 10 y 300. La placa atiende una conexión cada vez: 15 segundos o más es lo recomendable."
+        }
       }
     }
   },
@@ -180,7 +222,159 @@
       },
       "today_production": {
         "name": "Today's Production"
+      },
+      "battery": {
+        "name": "Batería"
+      },
+      "house_load": {
+        "name": "Consumo de la casa"
+      },
+      "grid_power": {
+        "name": "Potencia de la red"
+      },
+      "charger_power": {
+        "name": "Potencia del cargador"
+      },
+      "charger_state": {
+        "name": "Estado del cargador",
+        "state": {
+          "no_vehicle": "Sin coche",
+          "connected": "Coche conectado",
+          "charging": "Cargando",
+          "ventilation": "Cargando con ventilación",
+          "error": "Error del cargador"
+        }
+      },
+      "charger_limit": {
+        "name": "Límite del cargador"
+      },
+      "regulation": {
+        "name": "Regulación",
+        "state": {
+          "active": "Regulación activa",
+          "no_vehicle": "Esperando vehículo",
+          "manual_stop": "Cargador detenido manualmente",
+          "soc_low": "Detenido: batería por debajo del mínimo",
+          "soc_stale": "Detenido: sin lectura reciente de la batería",
+          "soc_recovering": "Esperando a que la batería supere el mínimo en 5 puntos",
+          "recovering": "Condiciones recuperadas; reanudando",
+          "comm_hold": "Comunicación inestable: carga al mínimo",
+          "power_insufficient": "Detenido: sin margen de potencia",
+          "inverter_stale": "Sin lecturas recientes del inversor",
+          "charger_stale": "Sin comunicación reciente con el cargador",
+          "limit_unconfirmed": "Límite no confirmado por el cargador",
+          "power_units_unknown": "Unidades del inversor sin verificar",
+          "storage_error": "Error de almacenamiento en la placa",
+          "ota_preparing": "Preparando una actualización",
+          "dyda_maintenance": "Mantenimiento del inversor en curso",
+          "charger_missing": "Cargador no encontrado",
+          "offline": "Cargador sin respuesta",
+          "unconfigured": "Regulación no configurada",
+          "cloud_window": "Pausa breve para que el dongle suba datos a Deye Cloud",
+          "cloud_prepare": "Preparando una pausa breve para Deye Cloud",
+          "cloud_window_charging": "Pausa breve para Deye Cloud: carga limitada",
+          "solar_wait": "Solo solar: esperando sol que sobre",
+          "solar_grid": "Solo solar: detenido porque entraba red",
+          "solar_soc_low": "Solo solar: la batería bajó del 95 %",
+          "solar_soc_recovering": "Solo solar: esperando a que la batería llegue al 100 %",
+          "no_charger": "Sin cargador detectado",
+          "other": "Otro estado (mira el detalle)"
+        }
+      },
+      "settings": {
+        "name": "Ajustes",
+        "state": {
+          "ready": "Se pueden cambiar",
+          "pin_missing": "Falta el PIN de la placa",
+          "pin_rejected": "El PIN guardado no es correcto",
+          "pin_locked": "Bloqueados por PIN incorrecto",
+          "unconfigured": "Atodosol aún no ha configurado la regulación",
+          "needs_sources": "Atodosol debe revisar el inversor",
+          "unsupported": "Instalación no admitida por esta versión",
+          "storage_error": "Error de almacenamiento en la placa",
+          "blocked": "No se pueden cambiar ahora"
+        }
+      },
+      "charger_data_age": {
+        "name": "Antigüedad de los datos del cargador"
       }
+    },
+    "binary_sensor": {
+      "charger_locked": {
+        "name": "Cargador bloqueado"
+      },
+      "change_pending": {
+        "name": "Cambio pendiente"
+      },
+      "charger_alarm": {
+        "name": "Alarma del cargador"
+      }
+    },
+    "select": {
+      "charge_mode": {
+        "name": "Modo de carga",
+        "state": {
+          "max": "Carga máxima",
+          "solar": "Solo solar"
+        }
+      }
+    },
+    "switch": {
+      "soc_protect": {
+        "name": "Detener la carga por SOC mínimo"
+      }
+    },
+    "number": {
+      "soc_minimum": {
+        "name": "SOC mínimo"
+      },
+      "contracted_power": {
+        "name": "Potencia contratada"
+      }
+    }
+  },
+  "exceptions": {
+    "board_unavailable": {
+      "message": "No hay datos recientes de la placa. Comprueba que está encendida y conectada a la red."
+    },
+    "not_writable": {
+      "message": "La placa no deja cambiar los ajustes ahora: {notice}"
+    },
+    "pin_locked": {
+      "message": "Demasiados PIN incorrectos. Espera {minutes} min y vuelve a intentarlo."
+    },
+    "pin_missing": {
+      "message": "La placa tiene PIN. Escríbelo en las opciones de la integración para cambiar los ajustes."
+    },
+    "pin_rejected": {
+      "message": "El PIN guardado no es correcto. Corrígelo en las opciones de la integración."
+    },
+    "pin_wrong": {
+      "message": "La placa no ha aceptado el PIN. Corrígelo en las opciones de la integración. Intentos que quedan: {attempts}."
+    },
+    "solar_unavailable": {
+      "message": "«Solo solar» no está disponible: el inversor no informa de la potencia de la batería."
+    },
+    "offgrid_contracted": {
+      "message": "En una instalación aislada la potencia contratada no se usa."
+    },
+    "write_rejected": {
+      "message": "La placa no ha aceptado el cambio: {message}"
+    },
+    "write_failed": {
+      "message": "No se pudo conectar con la placa. No se ha cambiado nada."
+    },
+    "write_unknown": {
+      "message": "La placa no respondió a tiempo. Puede que haya aplicado el cambio: lo verás en la próxima lectura."
+    },
+    "board_host_rejected": {
+      "message": "La placa no acepta la dirección {host}. Usa atodosol.local, atodosol-2.local o su IP."
+    },
+    "board_read_failed": {
+      "message": "No se pudo leer la placa en {host}: {error}"
+    },
+    "board_wrong_board": {
+      "message": "En {host} responde otra placa ({found}). Corrige la dirección en las opciones."
     }
   }
 }

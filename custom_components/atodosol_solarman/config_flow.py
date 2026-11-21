@@ -21,6 +21,8 @@ from homeassistant.helpers.selector import selector
 from .const import *
 from .common import *
 from .discovery import discover
+from .board import is_board
+from .board.config_flow import BoardConfigFlowMixin, BoardOptionsFlow
 
 _LOGGER = getLogger(__name__)
 
@@ -113,7 +115,7 @@ def remove_defaults(user_input: dict[str, Any]):
             del user_input[k]
     return user_input
 
-class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
+class ConfigFlowHandler(BoardConfigFlowMixin, ConfigFlow, domain=DOMAIN):
     VERSION = 2
     MINOR_VERSION = 0
 
@@ -125,7 +127,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         self._suggested = {}
 
     async def async_step_user(self, user_input=None):
-        return self.async_show_menu(step_id="user", menu_options=["automatic", "manual"])
+        return self.async_show_menu(step_id="user", menu_options=["automatic", "manual", "board"])
 
     async def async_step_automatic(self, user_input=None):
         errors = {}
@@ -211,6 +213,8 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_dhcp(self, discovery_info):
+        if (result := self.board_dhcp(discovery_info)) is not None:
+            return result
         # DHCP is a hint only; the manual confirmation still performs a real read.
         self._suggested = {CONF_HOST: discovery_info.ip, CONF_NAME: DEFAULT_[CONF_NAME]}
         return await self.async_step_manual()
@@ -222,7 +226,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(entry):
-        return OptionsFlowHandler(entry)
+        return BoardOptionsFlow(entry) if is_board(entry) else OptionsFlowHandler(entry)
 
 
 class OptionsFlowHandler(OptionsFlow):

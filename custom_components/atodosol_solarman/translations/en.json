@@ -1,9 +1,14 @@
 {
   "config": {
+    "flow_title": "{name}",
     "abort": {
       "already_configured": "Device is already configured",
       "already_configured_device": "Device is already configured",
-      "already_in_progress": "Configuration flow is already in progress"
+      "already_in_progress": "Configuration flow is already in progress",
+      "board_already_configured": "This board is already set up.",
+      "board_cannot_connect": "The board that was found could not be read.",
+      "not_a_board": "The device found is not an Atodosol home automation board.",
+      "invalid_host": "The address of the device found is not valid."
     },
     "error": {
       "cannot_connect": "Failed to connect",
@@ -11,7 +16,10 @@
       "timeout_connect": "Timeout establishing connection",
       "unknown": "Unexpected error",
       "invalid_network": "Use a private IPv4 range of /22 or smaller, such as 192.168.1.0/24.",
-      "invalid_response": "The device did not return a valid response for this profile. Check protocol, port and Slave ID."
+      "invalid_response": "The device did not return a valid response for this profile. Check protocol, port and Slave ID.",
+      "board_cannot_connect": "The board could not be read. Check the address and that Home Assistant is on the same network as the board.",
+      "board_host_rejected": "The board only answers to atodosol.local, atodosol-2.local or its IP. Enter one of those addresses.",
+      "not_a_board": "No Atodosol home automation board answers at that address."
     },
     "step": {
       "manual": {
@@ -49,10 +57,11 @@
       },
       "user": {
         "title": "Atodosol Instalaciones Fotovoltaicas",
-        "description": "Choose how to connect your inverter.",
+        "description": "Choose what you want to add.",
         "menu_options": {
-          "automatic": "Find on my network",
-          "manual": "Enter IP manually"
+          "automatic": "Inverter: search my network",
+          "manual": "Inverter: enter the IP manually",
+          "board": "Atodosol home automation board"
         }
       },
       "automatic": {
@@ -84,6 +93,20 @@
           "automatic": "Retry search",
           "manual": "Enter IP manually"
         }
+      },
+      "board": {
+        "title": "Atodosol home automation board",
+        "description": "Enter the board address: atodosol.local or its IP. If there are two boards at home, the second one is atodosol-2.local. Home Assistant must be on the same network.",
+        "data": {
+          "host": "Board address"
+        },
+        "data_description": {
+          "host": "atodosol.local, atodosol-2.local or the board IP, for example 192.168.1.50."
+        }
+      },
+      "board_discovered": {
+        "title": "Atodosol home automation board found",
+        "description": "There is an Atodosol home automation board at {host} ({name}). Do you want to add it?"
       }
     },
     "progress": {
@@ -101,7 +124,12 @@
       "unknown": "Unexpected error",
       "invalid_response": "The device did not return a valid response for this profile. Check protocol, port and Slave ID.",
       "wrong_device": "This address belongs to a different inverter. Add it as a new device.",
-      "already_configured": "This inverter is already configured in another entry."
+      "already_configured": "This inverter is already configured in another entry.",
+      "board_cannot_connect": "The board could not be read. Check the address and that Home Assistant is on the same network as the board.",
+      "board_host_rejected": "The board only answers to atodosol.local, atodosol-2.local or its IP. Enter one of those addresses.",
+      "not_a_board": "No Atodosol home automation board answers at that address.",
+      "wrong_board": "Another board answers at that address. Add it as a new device.",
+      "invalid_pin": "The PIN has 4 to 8 digits."
     },
     "step": {
       "init": {
@@ -138,6 +166,20 @@
       "inverter_replaced": {
         "title": "Inverter replaced?",
         "description": "The inverter at this address now reports serial number {new_serial} instead of {old_serial}. Confirm only if the inverter was replaced: this device and its entities are kept and move to the new serial number, and the Auto profile is detected again. If you set an exact model, a manual profile or additional options for the previous inverter, review them."
+      },
+      "board": {
+        "title": "Atodosol home automation board",
+        "description": "If the board has a PIN, enter it here to change its settings from Home Assistant. The board cannot check a PIN without changing a setting: it is checked the first time you change something. To set, change or remove the PIN, use the board page.",
+        "data": {
+          "host": "Board address",
+          "pin": "Board PIN",
+          "scan_interval": "Read every (seconds)"
+        },
+        "data_description": {
+          "host": "Accepted only if this same board answers at the new address.",
+          "pin": "Leave it empty if the board has no PIN. It has 4 to 8 digits.",
+          "scan_interval": "Between 10 and 300. The board serves one connection at a time: 15 seconds or more is recommended."
+        }
       }
     }
   },
@@ -179,7 +221,159 @@
       },
       "today_production": {
         "name": "Today's Production"
+      },
+      "battery": {
+        "name": "Battery"
+      },
+      "house_load": {
+        "name": "House consumption"
+      },
+      "grid_power": {
+        "name": "Grid power"
+      },
+      "charger_power": {
+        "name": "Charger power"
+      },
+      "charger_state": {
+        "name": "Charger status",
+        "state": {
+          "no_vehicle": "No car",
+          "connected": "Car connected",
+          "charging": "Charging",
+          "ventilation": "Charging with ventilation",
+          "error": "Charger error"
+        }
+      },
+      "charger_limit": {
+        "name": "Charger limit"
+      },
+      "regulation": {
+        "name": "Regulation",
+        "state": {
+          "active": "Regulation active",
+          "no_vehicle": "Waiting for a car",
+          "manual_stop": "Charger stopped by hand",
+          "soc_low": "Stopped: battery below the minimum",
+          "soc_stale": "Stopped: no recent battery reading",
+          "soc_recovering": "Waiting for the battery to be 5 points above the minimum",
+          "recovering": "Conditions back; resuming",
+          "comm_hold": "Unstable communication: charging at the minimum",
+          "power_insufficient": "Stopped: no power margin",
+          "inverter_stale": "No recent inverter readings",
+          "charger_stale": "No recent communication with the charger",
+          "limit_unconfirmed": "Limit not confirmed by the charger",
+          "power_units_unknown": "Inverter units not verified",
+          "storage_error": "Board storage error",
+          "ota_preparing": "Preparing an update",
+          "dyda_maintenance": "Inverter maintenance in progress",
+          "charger_missing": "Charger not found",
+          "offline": "Charger not answering",
+          "unconfigured": "Regulation not set up",
+          "cloud_window": "Short pause for the dongle to upload data to Deye Cloud",
+          "cloud_prepare": "Preparing a short pause for Deye Cloud",
+          "cloud_window_charging": "Short pause for Deye Cloud: charging limited",
+          "solar_wait": "Solar only: waiting for surplus sun",
+          "solar_grid": "Solar only: stopped because power came from the grid",
+          "solar_soc_low": "Solar only: the battery went below 95 %",
+          "solar_soc_recovering": "Solar only: waiting for the battery to reach 100 %",
+          "no_charger": "No charger detected",
+          "other": "Other status (see the details)"
+        }
+      },
+      "settings": {
+        "name": "Settings",
+        "state": {
+          "ready": "Can be changed",
+          "pin_missing": "Board PIN needed",
+          "pin_rejected": "The saved PIN is wrong",
+          "pin_locked": "Locked after wrong PINs",
+          "unconfigured": "Atodosol has not set up the regulation yet",
+          "needs_sources": "Atodosol must check the inverter",
+          "unsupported": "Installation not supported by this version",
+          "storage_error": "Board storage error",
+          "blocked": "Cannot be changed now"
+        }
+      },
+      "charger_data_age": {
+        "name": "Charger data age"
       }
+    },
+    "binary_sensor": {
+      "charger_locked": {
+        "name": "Charger locked"
+      },
+      "change_pending": {
+        "name": "Change pending"
+      },
+      "charger_alarm": {
+        "name": "Charger alarm"
+      }
+    },
+    "select": {
+      "charge_mode": {
+        "name": "Charge mode",
+        "state": {
+          "max": "Maximum charge",
+          "solar": "Solar only"
+        }
+      }
+    },
+    "switch": {
+      "soc_protect": {
+        "name": "Stop charging at minimum SOC"
+      }
+    },
+    "number": {
+      "soc_minimum": {
+        "name": "Minimum SOC"
+      },
+      "contracted_power": {
+        "name": "Contracted power"
+      }
+    }
+  },
+  "exceptions": {
+    "board_unavailable": {
+      "message": "There is no recent data from the board. Check that it is powered and connected to the network."
+    },
+    "not_writable": {
+      "message": "The board does not allow changing its settings now: {notice}"
+    },
+    "pin_locked": {
+      "message": "Too many wrong PINs. Wait {minutes} min and try again."
+    },
+    "pin_missing": {
+      "message": "The board has a PIN. Enter it in the integration options to change the settings."
+    },
+    "pin_rejected": {
+      "message": "The saved PIN is wrong. Correct it in the integration options."
+    },
+    "pin_wrong": {
+      "message": "The board did not accept the PIN. Correct it in the integration options. Attempts left: {attempts}."
+    },
+    "solar_unavailable": {
+      "message": "\"Solar only\" is not available: the inverter does not report the battery power."
+    },
+    "offgrid_contracted": {
+      "message": "In an off-grid installation the contracted power is not used."
+    },
+    "write_rejected": {
+      "message": "The board did not accept the change: {message}"
+    },
+    "write_failed": {
+      "message": "Could not connect to the board. Nothing was changed."
+    },
+    "write_unknown": {
+      "message": "The board did not answer in time. It may have applied the change: you will see it in the next reading."
+    },
+    "board_host_rejected": {
+      "message": "The board does not accept the address {host}. Use atodosol.local, atodosol-2.local or its IP."
+    },
+    "board_read_failed": {
+      "message": "Could not read the board at {host}: {error}"
+    },
+    "board_wrong_board": {
+      "message": "Another board ({found}) answers at {host}. Correct the address in the options."
     }
   }
 }

@@ -3,10 +3,14 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.components.diagnostics import async_redact_data
 
 from .coordinator import Coordinator
+from .board import is_board
+from .board.setup import async_board_diagnostics
 
 TO_REDACT = {"identifiers", "connections", "serial_number", "mac", "device_serial_number_sensor"}
 
-async def async_get_config_entry_diagnostics(_: HomeAssistant, config_entry: ConfigEntry[Coordinator]):
+async def async_get_config_entry_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry[Coordinator]):
+    if is_board(config_entry):
+        return await async_board_diagnostics(hass, config_entry)
     return {
         "title": config_entry.title,
         "config": async_redact_data(config_entry, TO_REDACT),

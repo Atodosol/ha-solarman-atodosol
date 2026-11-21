@@ -11,6 +11,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import *
 from .common import *
 from .services import *
+from .board import is_board
+from .board import sensor as board_sensor
 from .entity import SolarmanEntity, Coordinator
 
 _LOGGER = getLogger(__name__)
@@ -43,7 +45,10 @@ def _create_entity(coordinator, description, options):
 
     return SolarmanSensor(coordinator, description)
 
-async def async_setup_entry(_: HomeAssistant, config_entry: ConfigEntry[Coordinator], async_add_entities: AddEntitiesCallback) -> bool:
+async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry[Coordinator], async_add_entities: AddEntitiesCallback) -> bool:
+    if is_board(config_entry):
+        return await board_sensor.async_setup_entry(hass, config_entry, async_add_entities)
+
     _LOGGER.debug(f"async_setup_entry: {config_entry.options}")
 
     async_add_entities([SolarmanIntervalSensor(config_entry.runtime_data)] + [_create_entity(config_entry.runtime_data, d, config_entry.options).init() for d in postprocess_descriptions(config_entry.runtime_data, _PLATFORM)])
@@ -51,7 +56,8 @@ async def async_setup_entry(_: HomeAssistant, config_entry: ConfigEntry[Coordina
     return True
 
 async def async_unload_entry(_: HomeAssistant, config_entry: ConfigEntry[Coordinator]) -> bool:
-    _LOGGER.debug(f"async_unload_entry: {config_entry.options}")
+    if not is_board(config_entry):  # board options hold its PIN
+        _LOGGER.debug(f"async_unload_entry: {config_entry.options}")
 
     return True
 

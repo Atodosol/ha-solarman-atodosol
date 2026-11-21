@@ -19,7 +19,7 @@ def mocks(hass):
 async def test_manual_and_auto_menu(hass):
     result=await hass.config_entries.flow.async_init(DOMAIN,context={'source':'user'})
     assert result['type']==FlowResultType.MENU
-    assert result['menu_options']==['automatic','manual']
+    assert result['menu_options']==['automatic','manual','board']
     result=await hass.config_entries.flow.async_configure(result['flow_id'],{'next_step_id':'manual'})
     assert result['type']==FlowResultType.FORM and result['step_id']=='manual'
     with patch('custom_components.atodosol_solarman.config_flow.validate_connection',return_value=(None,DEVICE)):
