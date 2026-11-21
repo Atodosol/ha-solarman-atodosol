@@ -600,3 +600,48 @@ async def test_pin_never_reaches_the_log(hass, board, caplog):
     assert board.posts == ['pin=4321&mode=solar&soc_protect=1&minimum=30']
     assert 'async_setup' in caplog.text or 'Cambio enviado' in caplog.text
     assert '4321' not in caplog.text
+
+
+# --- Charge mode reported by the board (`mode`) --------------------------------------------------------------
+
+
+def test_charge_mode_reads_the_mode_field_first():
+    assert BoardState.parse(writable_state()).charge_mode == 'max'  # no `mode`: from `solar`
+    assert BoardState.parse(writable_state(solar=True)).charge_mode == 'solar'
+    assert BoardState.parse(writable_state(mode='solar', solar=False)).charge_mode == 'solar'
+    assert BoardState.parse(writable_state(mode='max', solar=True)).charge_mode == 'max'
+    for unknown in ('cheap_hours', '', None, 2):
+        state = BoardState.parse(writable_state(mode=unknown))
+        assert state.charge_mode is None, unknown  # never «max»
+
+
+async def test_mode_field_drives_the_select(hass, board):
+    board.state = writable_state(mode='solar', solar=False)
+    await setup_board(hass, board)
+    assert state_of(hass, 'select', 'charge_mode').state == 'solar'
+    assert state_of(hass, 'select', 'charge_mode').attributes['board_mode'] == 'solar'
+    assert state_of(hass, 'switch', 'soc_protect').state == STATE_UNAVAILABLE
+
+
+async def test_unknown_mode_is_unknown_and_never_overwritten(hass, board):
+    board.state = writable_state(mode='cheap_hours')
+    entry = await setup_board(hass, board)
+    mode = state_of(hass, 'select', 'charge_mode')
+    assert mode.state == STATE_UNKNOWN and mode.attributes['board_mode'] == 'cheap_hours'
+    # Other changes never carry `mode`: the board keeps the mode it has.
+    await call(hass, 'number', 'set_value', 'soc_minimum', value=45)
+    await entry.runtime_data.async_refresh()
+    await call(hass, 'number', 'set_value', 'contracted_power', value=5.75)
+    await entry.runtime_data.async_refresh()
+    await call(hass, 'switch', 'turn_off', 'soc_protect')
+    assert board.posts == ['soc_protect=1&minimum=45', 'contracted_kw=5.75&soc_protect=1&minimum=45', 'soc_protect=0']
+    assert board.state['mode'] == 'cheap_hours'
+    await entry.runtime_data.async_refresh()
+    await hass.async_block_till_done()
+    assert state_of(hass, 'select', 'charge_mode').state == STATE_UNKNOWN
+    # Choosing a known mode is still possible, on purpose.
+    await call(hass, 'select', 'select_option', 'charge_mode', option='max')
+    assert board.posts[-1] == 'mode=max&soc_protect=0'
+    await entry.runtime_data.async_refresh()
+    await hass.async_block_till_done()
+    assert state_of(hass, 'select', 'charge_mode').state == 'max'

@@ -34,14 +34,18 @@ class ChargeMode(BoardControl, SelectEntity):
         return [MODE_MAX, MODE_SOLAR] if state is None or state.solar_selectable else [MODE_MAX]
 
     @property
-    def current_option(self) -> str:
-        return MODE_SOLAR if self.board.solar else MODE_MAX
+    def current_option(self) -> str | None:
+        # None (unknown) for a mode this version does not know, never «max».
+        return self.board.charge_mode
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
         if self.coordinator.data is None:
             return None
-        return {"solar_available": self.board.solar_ok, "solar_floor": self.board.solar_floor}
+        attributes = {"solar_available": self.board.solar_ok, "solar_floor": self.board.solar_floor}
+        if self.board.mode_reported:
+            attributes["board_mode"] = self.board.mode
+        return attributes
 
     async def async_select_option(self, option: str) -> None:
         await self.coordinator.async_change(mode=option)

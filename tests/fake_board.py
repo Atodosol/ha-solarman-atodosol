@@ -157,6 +157,8 @@ class FakeBoard:
         if contracted is not None:
             self.state['contracted_w'] = contracted
         self.state.update(solar=solar, soc_protect=minimum > 0, minimum=minimum)
+        if 'mode' in self.state and 'mode' in form:  # firmware that reports `mode`: kept unless sent
+            self.state['mode'] = form['mode']
         if self.state.get('charger'):
             self.state['charger']['pending'] = True
         return self._json(202, {'ok': True, 'pending': True, 'message': 'Cambio enviado; la placa lo está comprobando'})

@@ -29,7 +29,7 @@ class SocProtect(BoardControl, SwitchEntity):
         super().__init__(coordinator, "soc_protect")
 
     def control_available(self, state: BoardState) -> bool:
-        return not state.solar
+        return not state.solar_mode
 
     @property
     def is_on(self) -> bool:

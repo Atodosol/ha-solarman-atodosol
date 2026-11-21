@@ -48,7 +48,7 @@ def regulation(state: BoardState) -> str:
     if state.charger is None:
         return "no_charger"
     reason = state.charger.reason
-    if state.solar and reason in SOLAR_REASONS:
+    if state.solar_mode and reason in SOLAR_REASONS:
         return SOLAR_REASONS[reason]
     return reason if reason in REASONS else "other"
 

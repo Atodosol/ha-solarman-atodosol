@@ -99,6 +99,7 @@ Con dos placas, los nombres `atodosol.local` y `atodosol-2.local` pueden interca
 
 - Mientras Atodosol no haya configurado la regulación de tu placa, los controles aparecen como no disponibles y **Ajustes** explica por qué.
 - **Solo solar** solo se puede elegir si el inversor informa de la potencia de la batería. En **Solo solar** la placa protege la batería por su cuenta, así que **Detener la carga por SOC mínimo** y **SOC mínimo** no están disponibles; vuelven al elegir **Carga máxima**, con el mínimo que tenías.
+- Si la placa tiene un modo de carga que esta versión no conoce (una versión posterior del firmware puede añadir otro), **Modo de carga** aparece como desconocido. Cambiar el SOC mínimo, la protección o la potencia contratada no lo toca: el modo solo se envía cuando lo eliges tú.
 - Cada cambio se envía una sola vez. Si la placa no responde a tiempo, Home Assistant no lo repite, porque podría aplicarse dos veces: lo verás en la siguiente lectura. Mientras hay un cambio pendiente, Home Assistant lee la placa cada 5 segundos.
 - Si la placa rechaza un cambio, Home Assistant muestra el motivo que da la placa.
 

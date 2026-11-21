@@ -175,6 +175,8 @@ class BoardState:
     solar: bool
     solar_ok: bool
     solar_floor: int
+    mode: str | None            # `mode` as reported, when the firmware sends it
+    mode_reported: bool
     soc: int | float | None
     soc_age_s: int
     load_w: int | float | None
@@ -212,6 +214,8 @@ class BoardState:
             solar=_bool(payload.get("solar")),
             solar_ok=_bool(payload.get("solar_ok")),
             solar_floor=_int(payload.get("solar_floor")) or 0,
+            mode=payload["mode"] if isinstance(payload.get("mode"), str) else None,
+            mode_reported="mode" in payload,
             soc=_num(payload.get("soc")),
             soc_age_s=_int(payload.get("soc_age_s")) or 0,
             load_w=_num(payload.get("load_w")),
@@ -231,9 +235,26 @@ class BoardState:
         return ":".join(hexa[i:i + 2] for i in range(0, 12, 2))
 
     @property
+    def charge_mode(self) -> str | None:
+        """Charge mode: `mode` when the board reports it, else derived from `solar`.
+
+        A mode this version does not know (a later firmware may add one) is
+        None, never «max»: it is shown as unknown and never sent back.
+        """
+        if self.mode_reported:
+            return self.mode if self.mode in MODES else None
+        return MODE_SOLAR if self.solar else MODE_MAX
+
+    @property
+    def solar_mode(self) -> bool:
+        """«Solo solar» is on (for an unknown mode, as the board's `solar` says)."""
+        mode = self.charge_mode
+        return mode == MODE_SOLAR if mode is not None else self.solar
+
+    @property
     def solar_selectable(self) -> bool:
         """«Solo solar» can be chosen (or is already on and can be left)."""
-        return self.solar_ok or self.solar
+        return self.solar_ok or self.solar_mode
 
     @property
     def alarms(self) -> list[dict[str, Any]]:
@@ -256,6 +277,8 @@ def settings_fields(state: BoardState, *, mode: str | None = None, soc_protect: 
 
     Only the given values change; the board keeps the mode and the contracted
     power that are not sent, and `soc_protect`/`minimum` are resent as saved.
+    `mode` is sent only when the user changes the mode, so a mode this
+    version does not know is never overwritten by another change.
     """
     fields: list[tuple[str, str]] = []
     if state.pin_set and pin:
